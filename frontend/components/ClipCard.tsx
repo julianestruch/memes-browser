@@ -45,12 +45,12 @@ export default function ClipCard({ clip, onPlay, smallMobile }: ClipCardProps) {
           <img
             src={getThumbnailUrl(clip.thumbnailPath)}
             alt={clip.title}
-            className={`w-full ${smallMobile ? 'h-[90px]' : 'h-40'} object-cover ${smallMobile ? 'rounded-md' : 'rounded-t-lg'}`}
+            className={`w-full ${smallMobile ? 'h-[110px]' : 'h-[180px]'} object-cover ${smallMobile ? 'rounded-md' : 'rounded-t-lg'}`}
             onError={() => setImageError(true)}
-            style={smallMobile ? { minHeight: 90, maxHeight: 120 } : {}}
+            style={smallMobile ? { minHeight: 90, maxHeight: 140 } : {}}
           />
         ) : (
-          <div className={`w-full ${smallMobile ? 'h-[90px]' : 'h-40'} flex items-center justify-center bg-gray-300 ${smallMobile ? 'rounded-md' : 'rounded-t-lg'}`}>
+          <div className={`w-full ${smallMobile ? 'h-[110px]' : 'h-[180px]'} flex items-center justify-center bg-gray-300 ${smallMobile ? 'rounded-md' : 'rounded-t-lg'}`}>
             <Play className={`${smallMobile ? 'w-6 h-6' : 'w-10 h-10'} text-gray-400`} />
           </div>
         )}
