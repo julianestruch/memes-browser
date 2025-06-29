@@ -50,6 +50,12 @@ export default function HomePage() {
     }
   };
 
+  const clearSearch = () => {
+    setSearchTerm('');
+    setSearchResults(null);
+    setError(null);
+  };
+
   const handlePlay = (clip: Clip) => {
     setSelectedClip(clip);
     setShowModal(true);
@@ -89,15 +95,26 @@ export default function HomePage() {
             <p className="text-lg text-red-600">{error}</p>
           </div>
         )}
+        
         {searchResults && (
           <>
-            <h2 className="text-xl font-semibold text-gray-900 mb-6 text-center">Resultados de la búsqueda</h2>
+            <div className="text-center mb-4 sm:mb-8">
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">Resultados de la búsqueda</h2>
+              <p className="text-sm sm:text-base text-gray-600 mb-4">
+                "{searchTerm}" - {searchResults.length} resultado{searchResults.length !== 1 ? 's' : ''}
+              </p>
+              <button
+                onClick={clearSearch}
+                className="btn-primary text-sm sm:text-base"
+              >
+                ← Volver a clips recientes
+              </button>
+            </div>
             {searchResults.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
                 {searchResults.map((clip) => (
-                  <div className="sm:p-0 p-1">
+                  <div key={clip.id} className="sm:p-0 p-1">
                     <ClipCard
-                      key={clip.id}
                       clip={clip}
                       onPlay={handlePlay}
                       smallMobile
@@ -114,18 +131,18 @@ export default function HomePage() {
                   Intenta con otros términos de búsqueda
                 </p>
                 <button
-                  onClick={() => { setSearchTerm(''); setSearchResults(null); }}
+                  onClick={clearSearch}
                   className="btn-primary text-sm sm:text-base"
                 >
-                  Limpiar búsqueda
+                  ← Volver a clips recientes
                 </button>
               </div>
             )}
           </>
         )}
 
-        {/* Clips recientes solo si no hay búsqueda */}
-        {!searchResults && !searchLoading && !searchTerm && (
+        {/* Clips recientes - siempre visibles si no hay resultados de búsqueda */}
+        {!searchResults && (
           <>
             <div className="text-center mb-4 sm:mb-8">
               <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-1 sm:mb-4">Clips recientes</h1>
@@ -148,9 +165,8 @@ export default function HomePage() {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
                 {clips.map((clip) => (
-                  <div className="sm:p-0 p-1">
+                  <div key={clip.id} className="sm:p-0 p-1">
                     <ClipCard
-                      key={clip.id}
                       clip={clip}
                       onPlay={handlePlay}
                       smallMobile
