@@ -27,9 +27,11 @@ app.use(compression());
 
 // Configuración de CORS para producción
 const corsOptions = {
-  origin: process.env.NODE_ENV === 'production' 
-    ? [process.env.FRONTEND_URL, 'https://your-domain.vercel.app'] // Reemplaza con tu dominio
-    : ['http://localhost:3000', 'http://127.0.0.1:3000'],
+  origin: [
+    'https://memes-browser.vercel.app',
+    'https://memes-browser-vhkxi8azr-julianestruchs-projects.vercel.app',
+    'http://localhost:3000'
+  ],
   credentials: true,
   optionsSuccessStatus: 200
 };
