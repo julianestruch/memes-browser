@@ -34,7 +34,7 @@ async function transcribeAudio(audioPath) {
         'Authorization': `Bearer ${apiKey}`,
       },
       maxBodyLength: Infinity,
-      timeout: 120000 // 2 minutos
+      timeout: 300000 // 5 minutos para videos más largos
     });
 
     console.log('✅ Transcripción completada:', response.data.substring(0, 100) + '...');

@@ -53,6 +53,10 @@ const upload = multer({
  * Sube y guarda un clip de video con soporte para Cloudinary
  */
 router.post('/upload', upload.single('videoFile'), async (req, res) => {
+  // Configurar timeout más largo para esta ruta
+  req.setTimeout(600000); // 10 minutos
+  res.setTimeout(600000); // 10 minutos
+  
   const { title, description, persons } = req.body;
   const videoFile = req.file;
   
@@ -85,7 +89,14 @@ router.post('/upload', upload.single('videoFile'), async (req, res) => {
       await fs.mkdir(audioDir, { recursive: true });
       const audioPath = await extractAudio(videoFile.path, audioDir);
       console.log('🎤 Audio extraído, iniciando transcripción...');
-      transcription = await transcribeAudio(audioPath);
+      
+      // Timeout de 4 minutos para la transcripción
+      const transcriptionPromise = transcribeAudio(audioPath);
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Timeout: La transcripción tardó demasiado')), 240000)
+      );
+      
+      transcription = await Promise.race([transcriptionPromise, timeoutPromise]);
       console.log('✅ Transcripción completada:', transcription.substring(0, 100) + '...');
       await cleanupFile(audioPath);
     } catch (err) {
