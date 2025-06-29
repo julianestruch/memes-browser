@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import { Upload, FileVideo, X, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { clipsApi } from '@/lib/api';
-import CreatableSelect from 'react-select/creatable';
+import Select from 'react-select';
 
 export default function UploadPage() {
   const router = useRouter();
@@ -20,8 +20,9 @@ export default function UploadPage() {
   const initialPersons = [
     'Azzaro', 'Duka', 'Porcel Jr', 'Sudaka', 'Gatos', 'La chabona', 'Coroniti', 'El bananero', 'Bananirou', 'Toscano', 'Cristina Kirchner', 'Milei', 'Downs',
     'Mernuel', 'Moski', 'Bauletti', 'Davo', 'BenitoSDR',
-    // Personas sugeridas
-    'Maslaton', 'Marra', 'Olivia Rodrigo', 'Ana de armas', 'Coscu', 'El Momo', 'Sydney Sweeney', 'Bri Marcos', 'Fantino', 'Tronco', 'Beltran Briones', 'Dua Lipa', 'Messi'
+    'Maslaton', 'Marra', 'Olivia Rodrigo', 'Ana de armas', 'Coscu', 'El Momo', 'Sydney Sweeney', 'Bri Marcos', 'Fantino', 'Tronco', 'Beltran Briones', 'Dua Lipa', 'Messi',
+    'Emilia Mernes', 'Nicki Nicole',
+    'NN'
   ];
   const [persons, setPersons] = useState<string[]>([]);
   const personOptions = initialPersons.map(p => ({ label: p, value: p }));
@@ -103,7 +104,8 @@ export default function UploadPage() {
     setError(null);
 
     try {
-      await clipsApi.upload(selectedFile, title.trim(), description.trim(), persons);
+      const personasElegidas = persons.length === 0 ? ['NN'] : persons;
+      await clipsApi.upload(selectedFile, title.trim(), description.trim(), personasElegidas);
       setUploadStatus('success');
       setTimeout(() => {
         router.push('/');
@@ -269,16 +271,15 @@ export default function UploadPage() {
             {/* Selector de personas */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Personas en el clip
+                Personas (elige una o varias)
               </label>
-              <CreatableSelect
+              <Select
                 isMulti
                 options={personOptions}
                 value={persons.map(p => ({ label: p, value: p }))}
-                onChange={opts => setPersons(opts ? opts.map(o => o.value) : [])}
-                placeholder="Escribe o selecciona personas..."
-                formatCreateLabel={inputValue => `Agregar "${inputValue}"`}
-                noOptionsMessage={() => 'Sin opciones'}
+                onChange={opts => setPersons(opts.map(o => o.value))}
+                placeholder="Selecciona personas..."
+                className="react-select-container"
                 classNamePrefix="react-select"
               />
             </div>
