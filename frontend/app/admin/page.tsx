@@ -292,11 +292,11 @@ export default function AdminPanel() {
               <div className="min-w-full">
                 {/* Headers de tabla - ocultos en móvil */}
                 <div className="hidden sm:grid sm:grid-cols-12 gap-4 p-4 sm:p-6 bg-gray-50 border-b border-gray-200 text-sm font-medium text-gray-700">
-                  <div className="col-span-3">Título</div>
+                  <div className="col-span-4">Título</div>
                   <div className="col-span-2">Estado</div>
                   <div className="col-span-2">Personas</div>
                   <div className="col-span-2">Fecha</div>
-                  <div className="col-span-3">Acciones</div>
+                  <div className="col-span-2 text-right">Acciones</div>
                 </div>
                 
                 {/* Clips */}
@@ -304,13 +304,21 @@ export default function AdminPanel() {
                   <div key={clip.id} className="border-b border-gray-200 last:border-b-0">
                     {/* Desktop view */}
                     <div className="hidden sm:grid sm:grid-cols-12 gap-4 p-4 sm:p-6 items-center">
-                      <div className="col-span-3">
-                        <h3 className="font-medium text-gray-900 truncate">{clip.title}</h3>
-                        {clip.description && (
-                          <p className="text-sm text-gray-600 truncate">{clip.description}</p>
-                        )}
+                      {/* Miniatura + título/desc */}
+                      <div className="col-span-4 flex items-center gap-3 min-w-0">
+                        <img
+                          src={getThumbnailUrl(clip.thumbnailPath)}
+                          alt={clip.title}
+                          className="w-16 h-10 object-cover rounded shadow border border-gray-200 flex-shrink-0"
+                        />
+                        <div className="min-w-0">
+                          <h3 className="font-medium text-gray-900 truncate">{clip.title}</h3>
+                          {clip.description && (
+                            <p className="text-sm text-gray-600 truncate">{clip.description}</p>
+                          )}
+                        </div>
                       </div>
-                      
+                      {/* Estado */}
                       <div className="col-span-2">
                         <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                           clip.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
@@ -321,7 +329,7 @@ export default function AdminPanel() {
                            clip.status === 'approved' ? 'Aprobado' : 'Rechazado'}
                         </span>
                       </div>
-                      
+                      {/* Personas */}
                       <div className="col-span-2">
                         {clip.persons && clip.persons.length > 0 ? (
                           <div className="flex flex-wrap gap-1">
@@ -338,12 +346,12 @@ export default function AdminPanel() {
                           <span className="text-gray-500 text-sm">Sin personas</span>
                         )}
                       </div>
-                      
+                      {/* Fecha */}
                       <div className="col-span-2 text-sm text-gray-600">
                         {formatDate(clip.createdAt)}
                       </div>
-                      
-                      <div className="col-span-3 flex space-x-2">
+                      {/* Acciones */}
+                      <div className="col-span-2 flex justify-end space-x-2">
                         {clip.status === 'pending' && (
                           <>
                             <button
