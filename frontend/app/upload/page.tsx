@@ -24,6 +24,7 @@ export default function UploadPage() {
     'Emilia Mernes', 'Nicki Nicole',
     'Jordi Wild', 'George Floyd', 'Neo pistea', 'Duki', 'Ysy', 'Llados', 'El xokas', 'Mascherano',
     'Paren la mano', 'German beder', 'Luquitas rodriguez', 'Alfredo montes de oca', 'Roberto galati',
+    'Goncho', 'Pergolini', 'Joaquín Cavanna',
     'NN'
   ];
   const [persons, setPersons] = useState<string[]>([]);
