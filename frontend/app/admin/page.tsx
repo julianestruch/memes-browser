@@ -12,7 +12,7 @@ interface AdminStats {
 }
 
 interface PendingClip extends Clip {
-  status: string;
+  status: 'pending' | 'approved' | 'rejected';
 }
 
 export default function AdminPanel() {
