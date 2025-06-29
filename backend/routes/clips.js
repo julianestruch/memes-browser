@@ -5,7 +5,7 @@ const fs = require('fs').promises;
 const { v4: uuidv4 } = require('uuid');
 const fetch = require('node-fetch');
 
-const { createClip, searchClipsByText, searchClipsByEmbedding, searchClipsByPerson, getAllClips, getClipById, deleteClip } = require('../config/database');
+const { createClip, searchClipsByText, searchClipsByEmbedding, searchClipsByPerson, getAllClips, getClipById } = require('../config/database');
 const { transcribeAudio, generateEmbedding } = require('../services/openai');
 const { processVideo, isValidVideo, cleanupFile, extractAudio, uploadVideoToCloudinary } = require('../services/videoProcessor');
 const cloudinaryService = require('../services/cloudinary');
@@ -235,15 +235,18 @@ router.get('/search', async (req, res) => {
 
 /**
  * GET /api/clips/recent
- * Obtiene clips recientes
+ * Obtiene clips recientes (solo aprobados)
  */
 router.get('/recent', async (req, res) => {
   const { limit = 12 } = req.query;
   
   try {
-    const result = await getAllClips(parseInt(limit), 0);
+    const Clip = require('../models/Clip');
+    const clips = await Clip.find({ status: 'approved' })
+      .sort({ created_at: -1 })
+      .limit(parseInt(limit));
     
-    const clips = result.rows.map(clip => ({
+    const formattedClips = clips.map(clip => ({
       id: clip._id,
       title: clip.title,
       description: clip.description,
@@ -257,8 +260,8 @@ router.get('/recent', async (req, res) => {
     }));
     
     res.json({
-      clips,
-      total: clips.length
+      clips: formattedClips,
+      total: formattedClips.length
     });
     
   } catch (error) {
@@ -272,7 +275,7 @@ router.get('/recent', async (req, res) => {
 
 /**
  * GET /api/clips/semantic-search
- * Búsqueda semántica de clips usando IA
+ * Búsqueda semántica de clips usando IA (solo aprobados)
  */
 router.get('/semantic-search', async (req, res) => {
   const { q, limit = 10 } = req.query;
@@ -287,27 +290,46 @@ router.get('/semantic-search', async (req, res) => {
     // Generar embedding de la consulta
     const queryEmbedding = await generateEmbedding(q.trim());
     
-    // Búsqueda por similitud de embedding
-    const result = await searchClipsByEmbedding(queryEmbedding, parseInt(limit));
+    // Búsqueda por similitud de embedding (solo clips aprobados)
+    const Clip = require('../models/Clip');
+    const clips = await Clip.find({ 
+      status: 'approved',
+      embedding: { $exists: true, $ne: null } 
+    });
     
-    const clips = result.rows.map(clip => ({
-      id: clip._id,
-      title: clip.title,
-      description: clip.description,
-      filePath: clip.video_url || clip.file_path,
-      thumbnailPath: clip.thumbnail_path,
-      createdAt: clip.created_at,
-      persons: clip.persons ? clip.persons.split(',') : [],
-      duration: clip.duration,
-      width: clip.width,
-      height: clip.height,
-      similarity: 0.8 // Simulamos similitud para mantener compatibilidad
-    }));
+    // Calcular similitud coseno para cada clip
+    const clipsWithSimilarity = clips.map(clip => {
+      if (!clip.embedding || !Array.isArray(clip.embedding)) {
+        return { clip, similarity: 0 };
+      }
+      
+      const similarity = cosineSimilarity(queryEmbedding, clip.embedding);
+      return { clip, similarity };
+    });
+
+    // Ordenar por similitud y devolver los mejores resultados
+    const bestClips = clipsWithSimilarity
+      .filter(item => item.similarity > 0.1)
+      .sort((a, b) => b.similarity - a.similarity)
+      .slice(0, parseInt(limit))
+      .map(item => ({
+        id: item.clip._id,
+        title: item.clip.title,
+        description: item.clip.description,
+        filePath: item.clip.video_url || item.clip.file_path,
+        thumbnailPath: item.clip.thumbnail_path,
+        createdAt: item.clip.created_at,
+        persons: item.clip.persons ? item.clip.persons.split(',') : [],
+        duration: item.clip.duration,
+        width: item.clip.width,
+        height: item.clip.height,
+        similarity: item.similarity
+      }));
     
     res.json({
       query: q,
-      results: clips,
-      total: clips.length
+      results: bestClips,
+      total: bestClips.length
     });
   } catch (error) {
     console.error('❌ Error en búsqueda semántica:', error);
@@ -318,67 +340,26 @@ router.get('/semantic-search', async (req, res) => {
   }
 });
 
-const extractCloudinaryPublicId = (url) => {
-  // Ejemplo: https://res.cloudinary.com/did3be5xl/image/upload/v1751219768/clipsearch/thumbnails/xqltjhduklholaax2xav.jpg
-  // Resultado: clipsearch/thumbnails/xqltjhduklholaax2xav
-  if (!url || !url.includes('cloudinary.com')) return null;
-  const matches = url.match(/\/upload\/v\d+\/(.+)\.[a-zA-Z0-9]+$/);
-  return matches ? matches[1] : null;
-};
-
-// DELETE /api/clips/:id
-router.delete('/:id', async (req, res) => {
-  const id = req.params.id;
-  try {
-    // Obtener clip antes de eliminarlo
-    const clip = await getClipById(id);
-    if (!clip) {
-      return res.status(404).json({ error: 'Clip no encontrado' });
-    }
-    
-    let cloudinaryError = null;
-    
-    // Eliminar de Cloudinary si existe public_id
-    if (clip.cloudinary_public_id) {
-      try {
-        // Eliminar video
-        await cloudinaryService.deleteFile(clip.cloudinary_public_id, 'video');
-        console.log('✅ Eliminado video de Cloudinary:', clip.cloudinary_public_id);
-      } catch (err) {
-        cloudinaryError = err.message;
-        console.warn('⚠️ No se pudo eliminar video de Cloudinary:', err.message);
-      }
-    }
-    
-    // Eliminar thumbnail de Cloudinary si la URL es de Cloudinary
-    const thumbCloudinaryId = extractCloudinaryPublicId(clip.thumbnail_path);
-    if (thumbCloudinaryId) {
-      try {
-        await cloudinaryService.deleteFile(thumbCloudinaryId, 'image');
-        console.log('✅ Eliminado thumbnail de Cloudinary:', thumbCloudinaryId);
-      } catch (err) {
-        cloudinaryError = (cloudinaryError ? cloudinaryError + ' | ' : '') + err.message;
-        console.warn('⚠️ No se pudo eliminar thumbnail de Cloudinary:', err.message);
-      }
-    }
-    
-    // Eliminar archivos locales (por compatibilidad)
-    const videoPath = path.join(__dirname, '../../uploads/videos', path.basename(clip.file_path));
-    const thumbPath = path.join(__dirname, '../../uploads/thumbnails', path.basename(clip.thumbnail_path));
-    try { await fs.unlink(videoPath); } catch {}
-    try { await fs.unlink(thumbPath); } catch {}
-    
-    // Eliminar de MongoDB
-    await deleteClip(id);
-    
-    res.json({ 
-      message: 'Clip borrado correctamente', 
-      cloudinary: cloudinaryError ? `Error: ${cloudinaryError}` : 'ok' 
-    });
-  } catch (err) {
-    res.status(500).json({ error: 'Error al borrar el clip', message: err.message });
+// Función para calcular similitud coseno (copiada del modelo)
+function cosineSimilarity(a, b) {
+  if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) {
+    return 0;
   }
-});
+  
+  let dotProduct = 0;
+  let normA = 0;
+  let normB = 0;
+  
+  for (let i = 0; i < a.length; i++) {
+    dotProduct += a[i] * b[i];
+    normA += a[i] * a[i];
+    normB += b[i] * b[i];
+  }
+  
+  if (normA === 0 || normB === 0) return 0;
+  
+  return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
+}
 
 // DESCARGA SEGURA: /api/clips/download/:id
 router.get('/download/:id', async (req, res) => {
@@ -410,6 +391,139 @@ router.get('/download/:id', async (req, res) => {
     });
   } catch (err) {
     res.status(500).json({ error: 'Error en la descarga', message: err.message });
+  }
+});
+
+// ===== RUTAS DEL PANEL DE ADMINISTRADOR =====
+
+/**
+ * GET /api/admin/stats
+ * Obtiene estadísticas del panel de administrador
+ */
+router.get('/admin/stats', async (req, res) => {
+  try {
+    const Clip = require('../models/Clip');
+    const stats = await Clip.getAdminStats();
+    
+    res.json(stats);
+  } catch (error) {
+    console.error('❌ Error obteniendo estadísticas de admin:', error);
+    res.status(500).json({
+      error: 'Error obteniendo estadísticas',
+      message: error.message
+    });
+  }
+});
+
+/**
+ * GET /api/admin/pending
+ * Obtiene clips pendientes de aprobación
+ */
+router.get('/admin/pending', async (req, res) => {
+  const { limit = 20, skip = 0 } = req.query;
+  
+  try {
+    const Clip = require('../models/Clip');
+    const clips = await Clip.findPendingClips(parseInt(limit), parseInt(skip));
+    
+    const formattedClips = clips.map(clip => ({
+      id: clip._id,
+      title: clip.title,
+      description: clip.description,
+      filePath: clip.video_url || clip.file_path,
+      thumbnailPath: clip.thumbnail_path,
+      createdAt: clip.created_at,
+      persons: clip.persons ? clip.persons.split(',') : [],
+      duration: clip.duration,
+      width: clip.width,
+      height: clip.height,
+      status: clip.status
+    }));
+    
+    res.json({
+      clips: formattedClips,
+      total: formattedClips.length
+    });
+    
+  } catch (error) {
+    console.error('❌ Error obteniendo clips pendientes:', error);
+    res.status(500).json({
+      error: 'Error obteniendo clips pendientes',
+      message: error.message
+    });
+  }
+});
+
+/**
+ * POST /api/admin/approve/:id
+ * Aprueba un clip
+ */
+router.post('/admin/approve/:id', async (req, res) => {
+  const id = req.params.id;
+  const { approvedBy = 'admin' } = req.body;
+  
+  try {
+    const Clip = require('../models/Clip');
+    const clip = await Clip.approveClip(id, approvedBy);
+    
+    if (!clip) {
+      return res.status(404).json({ error: 'Clip no encontrado' });
+    }
+    
+    res.json({
+      message: 'Clip aprobado correctamente',
+      clip: {
+        id: clip._id,
+        title: clip.title,
+        status: clip.status,
+        approved_at: clip.approved_at,
+        approved_by: clip.approved_by
+      }
+    });
+    
+  } catch (error) {
+    console.error('❌ Error aprobando clip:', error);
+    res.status(500).json({
+      error: 'Error aprobando clip',
+      message: error.message
+    });
+  }
+});
+
+/**
+ * POST /api/admin/reject/:id
+ * Rechaza un clip
+ */
+router.post('/admin/reject/:id', async (req, res) => {
+  const id = req.params.id;
+  const { rejectedBy = 'admin', reason = 'No cumple con las políticas' } = req.body;
+  
+  try {
+    const Clip = require('../models/Clip');
+    const clip = await Clip.rejectClip(id, rejectedBy, reason);
+    
+    if (!clip) {
+      return res.status(404).json({ error: 'Clip no encontrado' });
+    }
+    
+    res.json({
+      message: 'Clip rechazado correctamente',
+      clip: {
+        id: clip._id,
+        title: clip.title,
+        status: clip.status,
+        approved_at: clip.approved_at,
+        approved_by: clip.approved_by,
+        rejection_reason: clip.rejection_reason
+      }
+    });
+    
+  } catch (error) {
+    console.error('❌ Error rechazando clip:', error);
+    res.status(500).json({
+      error: 'Error rechazando clip',
+      message: error.message
+    });
   }
 });
 

@@ -37,6 +37,16 @@ async function setupMongoDB() {
     await Clip.collection.createIndex({ embedding: 1 }, { name: 'embedding_index' });
     console.log('✅ Índice de embedding creado');
     
+    // Índices para el panel de administrador
+    await Clip.collection.createIndex({ status: 1 }, { name: 'status_index' });
+    console.log('✅ Índice de status creado');
+    
+    await Clip.collection.createIndex({ status: 1, created_at: -1 }, { name: 'status_created_at_index' });
+    console.log('✅ Índice de status y fecha creado');
+    
+    await Clip.collection.createIndex({ approved_at: -1 }, { name: 'approved_at_index' });
+    console.log('✅ Índice de fecha de aprobación creado');
+    
     // Verificar que los índices se crearon correctamente
     console.log('🔍 Verificando índices...');
     const indexes = await Clip.collection.indexes();

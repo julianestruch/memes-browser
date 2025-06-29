@@ -46,6 +46,20 @@ const clipSchema = new mongoose.Schema({
   },
   height: {
     type: Number
+  },
+  status: {
+    type: String,
+    enum: ['pending', 'approved', 'rejected'],
+    default: 'pending'
+  },
+  approved_at: {
+    type: Date
+  },
+  approved_by: {
+    type: String
+  },
+  rejection_reason: {
+    type: String
   }
 }, {
   timestamps: true // Agrega createdAt y updatedAt automáticamente
@@ -55,6 +69,9 @@ const clipSchema = new mongoose.Schema({
 clipSchema.index({ title: 'text', description: 'text', persons: 'text', combined_text: 'text' });
 clipSchema.index({ created_at: -1 });
 clipSchema.index({ cloudinary_public_id: 1 });
+clipSchema.index({ status: 1 });
+clipSchema.index({ status: 1, created_at: -1 });
+clipSchema.index({ approved_at: -1 });
 
 // Método estático para búsqueda por similitud de embedding
 clipSchema.statics.findByEmbeddingSimilarity = async function(queryEmbedding, limit = 10) {
@@ -80,6 +97,50 @@ clipSchema.statics.findByEmbeddingSimilarity = async function(queryEmbedding, li
     .sort((a, b) => b.similarity - a.similarity)
     .slice(0, limit)
     .map(item => item.clip);
+};
+
+// Método estático para obtener clips pendientes de aprobación
+clipSchema.statics.findPendingClips = async function(limit = 50, skip = 0) {
+  return this.find({ status: 'pending' })
+    .sort({ created_at: -1 })
+    .limit(parseInt(limit))
+    .skip(parseInt(skip));
+};
+
+// Método estático para aprobar un clip
+clipSchema.statics.approveClip = async function(clipId, approvedBy) {
+  return this.findByIdAndUpdate(clipId, {
+    status: 'approved',
+    approved_at: new Date(),
+    approved_by: approvedBy
+  }, { new: true });
+};
+
+// Método estático para rechazar un clip
+clipSchema.statics.rejectClip = async function(clipId, rejectedBy, reason) {
+  return this.findByIdAndUpdate(clipId, {
+    status: 'rejected',
+    approved_at: new Date(),
+    approved_by: rejectedBy,
+    rejection_reason: reason
+  }, { new: true });
+};
+
+// Método estático para obtener estadísticas de administrador
+clipSchema.statics.getAdminStats = async function() {
+  const [pending, approved, rejected, total] = await Promise.all([
+    this.countDocuments({ status: 'pending' }),
+    this.countDocuments({ status: 'approved' }),
+    this.countDocuments({ status: 'rejected' }),
+    this.countDocuments()
+  ]);
+
+  return {
+    pending,
+    approved,
+    rejected,
+    total
+  };
 };
 
 // Función para calcular similitud coseno

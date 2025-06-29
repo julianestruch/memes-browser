@@ -94,19 +94,53 @@ export const clipsApi = {
   },
 
   /**
-   * Borra un clip por ID
-   */
-  delete: async (id: number): Promise<{ message: string }> => {
-    const response = await api.delete(`/api/clips/${id}`);
-    return response.data;
-  },
-
-  /**
    * Búsqueda semántica de clips
    */
   semanticSearch: async (query: string, limit: number = 10): Promise<{ results: Clip[]; total: number; query: string }> => {
     const response = await api.get('/api/clips/semantic-search', {
       params: { q: query, limit },
+    });
+    return response.data;
+  },
+};
+
+// API del Panel de Administrador
+export const adminApi = {
+  /**
+   * Obtiene estadísticas del panel de administrador
+   */
+  getStats: async (): Promise<{ pending: number; approved: number; rejected: number; total: number }> => {
+    const response = await api.get('/api/clips/admin/stats');
+    return response.data;
+  },
+
+  /**
+   * Obtiene clips pendientes de aprobación
+   */
+  getPendingClips: async (limit: number = 20, skip: number = 0): Promise<{ clips: Clip[]; total: number }> => {
+    const response = await api.get('/api/clips/admin/pending', {
+      params: { limit, skip },
+    });
+    return response.data;
+  },
+
+  /**
+   * Aprueba un clip
+   */
+  approveClip: async (clipId: string, approvedBy: string = 'admin'): Promise<{ message: string; clip: any }> => {
+    const response = await api.post(`/api/clips/admin/approve/${clipId}`, {
+      approvedBy,
+    });
+    return response.data;
+  },
+
+  /**
+   * Rechaza un clip
+   */
+  rejectClip: async (clipId: string, reason: string, rejectedBy: string = 'admin'): Promise<{ message: string; clip: any }> => {
+    const response = await api.post(`/api/clips/admin/reject/${clipId}`, {
+      reason,
+      rejectedBy,
     });
     return response.data;
   },

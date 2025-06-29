@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Search, Upload, Play, Database } from 'lucide-react';
+import { Search, Upload, Play, Database, Shield } from 'lucide-react';
 
 export default function Header() {
   return (
@@ -42,6 +42,14 @@ export default function Header() {
             >
               <Upload className="w-4 h-4" />
               <span>Subir Clip</span>
+            </Link>
+
+            <Link 
+              href="/admin" 
+              className="flex items-center space-x-1 text-gray-600 hover:text-red-600 transition-colors px-3 py-2 rounded-md text-sm font-medium"
+            >
+              <Shield className="w-4 h-4" />
+              <span>Admin</span>
             </Link>
           </nav>
         </div>
