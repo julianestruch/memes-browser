@@ -34,13 +34,15 @@ const upload = multer({
     fileSize: 100 * 1024 * 1024, // 100MB
   },
   fileFilter: (req, file, cb) => {
-    const allowedTypes = /mp4|avi|mov|mkv|webm|flv/;
+    // Ampliar tipos permitidos
+    const allowedTypes = /mp4|avi|mov|mkv|webm|flv|3gp|mpeg|mpg|wmv|ogg|m4v|x-msvideo|quicktime|x-matroska|x-flv|x-ms-wmv|x-msvideo|x-ms-asf/;
     const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = allowedTypes.test(file.mimetype);
-    
+    const mimetype = allowedTypes.test(file.mimetype.toLowerCase());
+    console.log('📝 Subida de archivo:', file.originalname, '| MIME:', file.mimetype);
     if (mimetype && extname) {
       return cb(null, true);
     } else {
+      console.warn('❌ Archivo rechazado por tipo:', file.originalname, '| MIME:', file.mimetype);
       cb(new Error('Solo se permiten archivos de video'));
     }
   }
