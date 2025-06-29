@@ -4,201 +4,160 @@ import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import ClipCard from '@/components/ClipCard';
 import VideoModal from '@/components/VideoModal';
-import { Clip, clipsApi } from '@/lib/api';
-import { Database, Loader2, AlertCircle, Filter } from 'lucide-react';
-import CreatableSelect from 'react-select/creatable';
+import { Search, Loader2, Database } from 'lucide-react';
+import { clipsApi, Clip } from '@/lib/api';
 
 export default function RepositoryPage() {
-  const [allClips, setAllClips] = useState<Clip[]>([]);
+  const [clips, setClips] = useState<Clip[]>([]);
   const [filteredClips, setFilteredClips] = useState<Clip[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
   const [selectedClip, setSelectedClip] = useState<Clip | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [sortBy, setSortBy] = useState<'date' | 'title'>('date');
-  const initialPersons = [
-    'Azzaro', 'Duka', 'Porcel Jr', 'Sudaka', 'Gatos',
-    'Mernuel', 'Moski', 'Bauletti', 'Davo', 'BenitoSDR'
-  ];
-  const [personFilter, setPersonFilter] = useState<string | null>(null);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
-    loadAllClips();
+    loadClips();
   }, []);
 
   useEffect(() => {
-    let filtered = [...allClips];
-
-    if (personFilter) {
-      filtered = filtered.filter(clip => (clip.persons || []).includes(personFilter));
+    if (searchTerm.trim() === '') {
+      setFilteredClips(clips);
+    } else {
+      const filtered = clips.filter(clip => 
+        clip.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        clip.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        clip.persons?.some(person => 
+          person.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      );
+      setFilteredClips(filtered);
     }
+  }, [searchTerm, clips]);
 
-    filtered.sort((a, b) => {
-      if (sortBy === 'date') {
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      } else {
-        return a.title.localeCompare(b.title);
-      }
-    });
-
-    setFilteredClips(filtered);
-  }, [allClips, sortBy, personFilter]);
-
-  const loadAllClips = async () => {
-    setIsLoading(true);
-    setError(null);
-
+  const loadClips = async () => {
     try {
-      const response = await clipsApi.getRecent(1000);
-      setAllClips(response.clips);
+      setLoading(true);
+      const data = await clipsApi.getAll();
+      setClips(data.clips);
+      setFilteredClips(data.clips);
     } catch (error) {
-      console.error('Error cargando clips:', error);
-      setError('No se pudieron cargar los clips del repositorio');
+      console.error('Error loading clips:', error);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  const handlePlayClip = (clip: Clip) => {
+  const handlePlay = (clip: Clip) => {
     setSelectedClip(clip);
-    setIsModalOpen(true);
+    setShowModal(true);
   };
 
   const handleCloseModal = () => {
-    setIsModalOpen(false);
+    setShowModal(false);
     setSelectedClip(null);
   };
-
-  const clearFilters = () => {
-    setSortBy('date');
-    setPersonFilter(null);
-  };
-
-  const allPersons = Array.from(new Set([
-    ...initialPersons,
-    ...allClips.flatMap(c => c.persons || [])
-  ]));
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
       
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-blue-600 rounded-lg flex items-center justify-center">
-              <Database className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Repositorio de Clips</h1>
-              <p className="text-gray-600">Explora todos los videos disponibles</p>
-            </div>
+      <main className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-8">
+        {/* Header */}
+        <div className="text-center mb-6 sm:mb-8">
+          <div className="flex items-center justify-center mb-2 sm:mb-4">
+            <Database className="w-6 h-6 sm:w-8 sm:h-8 text-primary-600 mr-2 sm:mr-3" />
+            <h1 className="text-2xl sm:text-4xl font-bold text-gray-900">
+              Repositorio de Clips
+            </h1>
           </div>
+          <p className="text-sm sm:text-lg text-gray-600 max-w-2xl mx-auto">
+            Explora toda la colección de clips disponibles
+          </p>
+        </div>
 
-          <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-primary-600">{allClips.length}</div>
-                <div className="text-sm text-gray-600">Total de clips</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">
-                  0
-                </div>
-                <div className="text-sm text-gray-600">Con transcripción</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600">
-                  {filteredClips.length}
-                </div>
-                <div className="text-sm text-gray-600">Mostrando</div>
-              </div>
-            </div>
+        {/* Search Bar */}
+        <div className="max-w-2xl mx-auto mb-6 sm:mb-8">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
+            <input
+              type="text"
+              placeholder="Busca en el repositorio..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm sm:text-base"
+            />
           </div>
         </div>
 
-        <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200 mb-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex items-center space-x-2">
-              <Filter className="w-4 h-4 text-gray-400" />
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as 'date' | 'title')}
-                className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              >
-                <option value="date">Más recientes</option>
-                <option value="title">Por título</option>
-              </select>
-            </div>
+        {/* Results Count */}
+        {!loading && (
+          <div className="text-center mb-4 sm:mb-6">
+            <p className="text-sm sm:text-base text-gray-600">
+              {filteredClips.length === 0 
+                ? 'No se encontraron clips' 
+                : `${filteredClips.length} clip${filteredClips.length !== 1 ? 's' : ''} en el repositorio`
+              }
+            </p>
+          </div>
+        )}
 
-            <div className="flex items-center space-x-2">
-              <span className="text-sm">Filtrar por persona:</span>
-              <CreatableSelect
-                isClearable
-                placeholder="Todas"
-                options={allPersons.map(p => ({ label: p, value: p }))}
-                value={personFilter ? { label: personFilter, value: personFilter } : null}
-                onChange={opt => setPersonFilter(opt ? opt.value : null)}
-                classNamePrefix="react-select"
-                styles={{ container: base => ({ ...base, minWidth: 180 }) }}
+        {/* Loading State */}
+        {loading && (
+          <div className="flex justify-center items-center py-12">
+            <div className="text-center">
+              <Loader2 className="w-8 h-8 sm:w-12 sm:h-12 animate-spin text-primary-600 mx-auto mb-4" />
+              <p className="text-sm sm:text-base text-gray-600">Cargando repositorio...</p>
+            </div>
+          </div>
+        )}
+
+        {/* Clips Grid */}
+        {!loading && filteredClips.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+            {filteredClips.map((clip) => (
+              <ClipCard
+                key={clip.id}
+                clip={clip}
+                onPlay={handlePlay}
               />
-            </div>
+            ))}
+          </div>
+        )}
 
-            {(sortBy !== 'date') && (
-              <button
-                onClick={clearFilters}
-                className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 transition-colors"
-              >
-                Limpiar filtros
-              </button>
-            )}
-          </div>
-        </div>
-
-        {isLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-8 h-8 text-primary-600 animate-spin mr-3" />
-            <span className="text-lg text-gray-600">Cargando repositorio...</span>
-          </div>
-        ) : error ? (
+        {/* Empty State */}
+        {!loading && filteredClips.length === 0 && searchTerm && (
           <div className="text-center py-12">
-            <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Error cargando repositorio</h3>
-            <p className="text-gray-600">{error}</p>
-          </div>
-        ) : filteredClips.length > 0 ? (
-          <div>
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-semibold text-gray-900">
-                Todos los clips
-              </h2>
-              <span className="text-sm text-gray-600">
-                {filteredClips.length} de {allClips.length} clips
-              </span>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredClips.map((clip) => (
-                <ClipCard
-                  key={clip.id}
-                  clip={clip}
-                  onPlay={handlePlayClip}
-                />
-              ))}
-            </div>
-          </div>
-        ) : (
-          <div className="text-center py-12">
-            <Database className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              No hay clips en el repositorio
+            <Search className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg sm:text-xl font-medium text-gray-900 mb-2">
+              No se encontraron resultados
             </h3>
-            <p className="text-gray-600 mb-6">
-              Sube tu primer clip para comenzar a llenar el repositorio
+            <p className="text-sm sm:text-base text-gray-600 mb-4">
+              Intenta con otros términos de búsqueda
+            </p>
+            <button
+              onClick={() => setSearchTerm('')}
+              className="btn-primary text-sm sm:text-base"
+            >
+              Limpiar búsqueda
+            </button>
+          </div>
+        )}
+
+        {/* No Clips State */}
+        {!loading && clips.length === 0 && !searchTerm && (
+          <div className="text-center py-12">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Database className="w-8 h-8 sm:w-10 sm:h-10 text-gray-400" />
+            </div>
+            <h3 className="text-lg sm:text-xl font-medium text-gray-900 mb-2">
+              Repositorio vacío
+            </h3>
+            <p className="text-sm sm:text-base text-gray-600 mb-4">
+              No hay clips en el repositorio aún
             </p>
             <a
               href="/upload"
-              className="btn-primary inline-flex items-center"
+              className="btn-primary text-sm sm:text-base"
             >
               Subir primer clip
             </a>
@@ -206,9 +165,10 @@ export default function RepositoryPage() {
         )}
       </main>
 
+      {/* Video Modal */}
       <VideoModal
         clip={selectedClip}
-        isOpen={isModalOpen}
+        isOpen={showModal}
         onClose={handleCloseModal}
       />
     </div>

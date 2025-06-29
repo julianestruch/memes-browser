@@ -138,18 +138,18 @@ export default function UploadPage() {
     <div className="min-h-screen bg-gray-50">
       <Header />
       
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">
+      <main className="max-w-4xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-8">
+        <div className="text-center mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 sm:mb-4">
             Subir nuevo clip
           </h1>
-          <p className="text-gray-600">
+          <p className="text-sm sm:text-base text-gray-600">
             Sube un video y obtén transcripción automática para búsquedas semánticas
           </p>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
             {/* Área de subida de archivo */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -157,7 +157,7 @@ export default function UploadPage() {
               </label>
               
               <div
-                className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+                className={`relative border-2 border-dashed rounded-lg p-4 sm:p-8 text-center transition-colors ${
                   dragActive 
                     ? 'border-primary-500 bg-primary-50' 
                     : selectedFile 
@@ -170,15 +170,15 @@ export default function UploadPage() {
                 onDrop={handleDrop}
               >
                 {selectedFile ? (
-                  <div className="space-y-4">
+                  <div className="space-y-3 sm:space-y-4">
                     <div className="flex items-center justify-center">
-                      <CheckCircle className="w-12 h-12 text-green-500" />
+                      <CheckCircle className="w-8 h-8 sm:w-12 sm:h-12 text-green-500" />
                     </div>
                     <div>
-                      <p className="text-lg font-medium text-gray-900 truncate max-w-full overflow-hidden whitespace-nowrap">
+                      <p className="text-base sm:text-lg font-medium text-gray-900 truncate max-w-full overflow-hidden whitespace-nowrap">
                         {selectedFile.name}
                       </p>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-xs sm:text-sm text-gray-500">
                         {formatFileSize(selectedFile.size)}
                       </p>
                     </div>
@@ -188,50 +188,48 @@ export default function UploadPage() {
                         <video
                           src={videoPreviewUrl}
                           controls
-                          className="max-h-64 rounded shadow"
+                          className="max-h-48 sm:max-h-64 rounded shadow w-full max-w-full"
                         />
                       )}
                     </div>
                     <button
                       type="button"
                       onClick={removeFile}
-                      className="btn-secondary text-sm"
+                      className="btn-secondary text-xs sm:text-sm py-1.5 sm:py-2 px-2 sm:px-4"
                     >
-                      <X className="w-4 h-4 mr-1" />
-                      Cambiar archivo
+                      <X className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                      Remover archivo
                     </button>
                   </div>
                 ) : (
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-center">
-                      <FileVideo className="w-12 h-12 text-gray-400" />
+                  <div className="space-y-3 sm:space-y-4">
+                    <div className="flex justify-center">
+                      <Upload className="w-8 h-8 sm:w-12 sm:h-12 text-gray-400" />
                     </div>
                     <div>
-                      <p className="text-lg font-medium text-gray-900">
-                        Arrastra tu video aquí o haz clic para seleccionar
+                      <p className="text-sm sm:text-base font-medium text-gray-900">
+                        Arrastra y suelta tu video aquí
                       </p>
-                      <p className="text-sm text-gray-500">
-                        MP4, AVI, MOV, MKV, WEBM, FLV (máx. 100MB)
+                      <p className="text-xs sm:text-sm text-gray-500 mt-1">
+                        o haz clic para seleccionar
                       </p>
                     </div>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="video/*"
+                      onChange={handleFileSelect}
+                      className="hidden"
+                    />
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="btn-primary"
+                      className="btn-primary text-xs sm:text-sm py-1.5 sm:py-2 px-3 sm:px-4"
                     >
-                      <Upload className="w-4 h-4 mr-2" />
                       Seleccionar archivo
                     </button>
                   </div>
                 )}
-                
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="video/*"
-                  onChange={handleFileSelect}
-                  className="hidden"
-                />
               </div>
             </div>
 
@@ -245,135 +243,112 @@ export default function UploadPage() {
                 id="title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Ej: Perro jugando en el parque"
-                className="input-field"
+                className="input-field text-sm sm:text-base"
+                placeholder="Ingresa el título del clip"
                 required
-                disabled={isUploading}
               />
             </div>
 
             {/* Descripción */}
             <div>
               <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
-                Descripción (opcional)
+                Descripción
               </label>
               <textarea
                 id="description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Describe el contenido del video para mejorar las búsquedas..."
-                rows={4}
-                className="input-field resize-none"
-                disabled={isUploading}
+                rows={3}
+                className="input-field text-sm sm:text-base resize-none"
+                placeholder="Describe el contenido del clip (opcional)"
               />
             </div>
 
-            {/* Selector de personas */}
+            {/* Personas */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Personas (elige una o varias)
+                Personas en el clip
               </label>
               <Select
                 isMulti
                 options={personOptions}
                 value={persons.map(p => ({ label: p, value: p }))}
-                onChange={opts => setPersons(opts.map(o => o.value))}
-                placeholder="Selecciona personas..."
-                className="react-select-container"
-                classNamePrefix="react-select"
+                onChange={(selected) => setPersons(selected ? selected.map(s => s.value) : [])}
+                placeholder="Selecciona las personas que aparecen..."
+                className="text-sm sm:text-base"
+                classNamePrefix="select"
+                styles={{
+                  control: (provided) => ({
+                    ...provided,
+                    fontSize: '14px',
+                    minHeight: '40px',
+                    '@media (min-width: 640px)': {
+                      fontSize: '16px',
+                      minHeight: '44px'
+                    }
+                  }),
+                  option: (provided) => ({
+                    ...provided,
+                    fontSize: '14px',
+                    '@media (min-width: 640px)': {
+                      fontSize: '16px'
+                    }
+                  }),
+                  multiValue: (provided) => ({
+                    ...provided,
+                    fontSize: '12px',
+                    '@media (min-width: 640px)': {
+                      fontSize: '14px'
+                    }
+                  })
+                }}
               />
+              <p className="text-xs sm:text-sm text-gray-500 mt-1">
+                Si no seleccionas ninguna persona, se asignará "NN"
+              </p>
             </div>
 
-            {/* Error */}
+            {/* Mensaje de error */}
             {error && (
-              <div className="flex items-center p-4 bg-red-50 border border-red-200 rounded-lg">
-                <AlertCircle className="w-5 h-5 text-red-500 mr-3" />
-                <p className="text-red-700">{error}</p>
-              </div>
-            )}
-
-            {/* Estado de upload */}
-            {uploadStatus === 'uploading' && (
-              <div className="flex items-center p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <Loader2 className="w-5 h-5 text-blue-500 mr-3 animate-spin" />
-                <div>
-                  <p className="text-blue-700 font-medium">Procesando tu video...</p>
-                  <p className="text-blue-600 text-sm">
-                    Esto puede tomar unos minutos. Te notificaremos cuando esté listo.
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {uploadStatus === 'success' && (
-              <div className="flex items-center p-4 bg-green-50 border border-green-200 rounded-lg">
-                <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
-                <div>
-                  <p className="text-green-700 font-medium">¡Clip subido exitosamente!</p>
-                  <p className="text-green-600 text-sm">
-                    Redirigiendo a la página principal...
-                  </p>
-                </div>
+              <div className="flex items-center space-x-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-red-500 flex-shrink-0" />
+                <span className="text-sm sm:text-base text-red-700">{error}</span>
               </div>
             )}
 
             {/* Botón de envío */}
-            <div className="flex justify-end space-x-4">
-              <button
-                type="button"
-                onClick={() => router.push('/')}
-                className="btn-secondary"
-                disabled={isUploading}
-              >
-                Cancelar
-              </button>
-              
+            <div className="flex justify-center">
               <button
                 type="submit"
-                disabled={!selectedFile || !title.trim() || isUploading}
-                className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={isUploading}
+                className={`btn-primary text-sm sm:text-base py-2 sm:py-3 px-6 sm:px-8 min-w-[120px] sm:min-w-[140px] ${
+                  isUploading ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
               >
                 {isUploading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Subiendo...
-                  </>
+                  <div className="flex items-center space-x-2">
+                    <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
+                    <span>Subiendo...</span>
+                  </div>
                 ) : (
-                  <>
-                    <Upload className="w-4 h-4 mr-2" />
-                    Subir y procesar
-                  </>
+                  <div className="flex items-center space-x-2">
+                    <Upload className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <span>Subir Clip</span>
+                  </div>
                 )}
               </button>
             </div>
-          </form>
-        </div>
 
-        {/* Información adicional */}
-        <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
-          <h3 className="text-lg font-medium text-blue-900 mb-3">
-            ¿Qué pasa después de subir?
-          </h3>
-          <div className="grid md:grid-cols-3 gap-4 text-sm text-blue-800">
-            <div className="flex items-start space-x-2">
-              <div className="w-6 h-6 bg-blue-200 rounded-full flex items-center justify-center text-blue-700 font-medium text-xs mt-0.5">
-                1
+            {/* Estado de éxito */}
+            {uploadStatus === 'success' && (
+              <div className="flex items-center justify-center space-x-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+                <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-500" />
+                <span className="text-sm sm:text-base text-green-700">
+                  ¡Clip subido exitosamente! Redirigiendo...
+                </span>
               </div>
-              <p>Extraemos el audio y generamos un thumbnail automáticamente</p>
-            </div>
-            <div className="flex items-start space-x-2">
-              <div className="w-6 h-6 bg-blue-200 rounded-full flex items-center justify-center text-blue-700 font-medium text-xs mt-0.5">
-                2
-              </div>
-              <p>Usamos Whisper para transcribir automáticamente el audio</p>
-            </div>
-            <div className="flex items-start space-x-2">
-              <div className="w-6 h-6 bg-blue-200 rounded-full flex items-center justify-center text-blue-700 font-medium text-xs mt-0.5">
-                3
-              </div>
-              <p>Generamos embeddings semánticos para búsquedas inteligentes</p>
-            </div>
-          </div>
+            )}
+          </form>
         </div>
       </main>
     </div>

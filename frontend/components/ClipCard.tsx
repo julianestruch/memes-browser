@@ -49,7 +49,7 @@ export default function ClipCard({ clip, onPlay }: ClipCardProps) {
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gray-300">
-            <Play className="w-12 h-12 text-gray-400" />
+            <Play className="w-8 h-8 sm:w-12 sm:h-12 text-gray-400" />
           </div>
         )}
         
@@ -59,21 +59,21 @@ export default function ClipCard({ clip, onPlay }: ClipCardProps) {
           onClick={handlePlay}
           style={{ cursor: 'pointer' }}
         >
-          <div className={`w-16 h-16 bg-white bg-opacity-90 rounded-full flex items-center justify-center transform transition-all duration-200 ${isHovered ? 'scale-100' : 'scale-0'}`}>
-            <Play className="w-8 h-8 text-gray-800 ml-1" />
+          <div className={`w-12 h-12 sm:w-16 sm:h-16 bg-white bg-opacity-90 rounded-full flex items-center justify-center transform transition-all duration-200 ${isHovered ? 'scale-100' : 'scale-0'}`}>
+            <Play className="w-6 h-6 sm:w-8 sm:h-8 text-gray-800 ml-1" />
           </div>
         </div>
       </div>
 
       {/* Contenido */}
-      <div className="p-4">
-        <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
+      <div className="p-3 sm:p-4">
+        <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 text-sm sm:text-base">
           {clip.title}
         </h3>
         
         {clip.description && (
-          <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-            {truncateText(clip.description, 100)}
+          <p className="text-xs sm:text-sm text-gray-600 mb-3 line-clamp-2">
+            {truncateText(clip.description, 80)}
           </p>
         )}
 
@@ -90,10 +90,10 @@ export default function ClipCard({ clip, onPlay }: ClipCardProps) {
           <a
             href={`/api/clips/download/${clip.id}`}
             download={clip.title.replace(/[^a-zA-Z0-9]/g, '_') + '.mp4'}
-            className="btn-secondary flex items-center gap-2"
+            className="btn-secondary flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-1.5 sm:py-2 px-2 sm:px-4"
             onClick={e => e.stopPropagation()}
           >
-            <Download className="w-4 h-4" /> Descargar
+            <Download className="w-3 h-3 sm:w-4 sm:h-4" /> Descargar
           </a>
         </div>
 

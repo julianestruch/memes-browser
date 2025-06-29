@@ -164,34 +164,34 @@ export default function AdminPanel() {
 
   if (!isLoggedIn) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <form onSubmit={handleLogin} className="bg-white p-8 rounded-lg shadow-md w-full max-w-sm">
-          <h2 className="text-2xl font-bold mb-6 text-center">Login Administrador</h2>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+        <form onSubmit={handleLogin} className="bg-white p-6 sm:p-8 rounded-lg shadow-md w-full max-w-sm">
+          <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-center">Login Administrador</h2>
           {loginError && <div className="mb-4 text-red-600 text-sm">{loginError}</div>}
           <div className="mb-4">
-            <label className="block text-gray-700 mb-2">Usuario</label>
+            <label className="block text-gray-700 mb-2 text-sm sm:text-base">Usuario</label>
             <input
               type="text"
               value={loginUser}
               onChange={e => setLoginUser(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
               autoFocus
               autoComplete="username"
             />
           </div>
           <div className="mb-6">
-            <label className="block text-gray-700 mb-2">Contraseña</label>
+            <label className="block text-gray-700 mb-2 text-sm sm:text-base">Contraseña</label>
             <input
               type="password"
               value={loginPass}
               onChange={e => setLoginPass(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
               autoComplete="current-password"
             />
           </div>
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded-md font-semibold hover:bg-blue-700 transition-colors"
+            className="w-full bg-blue-600 text-white py-2 rounded-md font-semibold hover:bg-blue-700 transition-colors text-sm sm:text-base"
           >
             Entrar
           </button>
@@ -200,262 +200,317 @@ export default function AdminPanel() {
     );
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Cargando panel de administrador...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8 flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Panel de Administrador</h1>
-            <p className="text-gray-600">Gestiona y aprueba clips subidos por los usuarios</p>
+      {/* Header */}
+      <div className="bg-white shadow-sm border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+          <div className="flex justify-between items-center h-14 sm:h-16">
+            <h1 className="text-lg sm:text-xl font-bold text-gray-900">Panel de Administrador</h1>
+            <button
+              onClick={handleLogout}
+              className="text-sm sm:text-base text-red-600 hover:text-red-700 font-medium"
+            >
+              Cerrar sesión
+            </button>
           </div>
-          <button
-            onClick={handleLogout}
-            className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md font-medium hover:bg-gray-300"
-          >
-            Cerrar sesión
-          </button>
         </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-8">
+        {error && (
+          <div className="mb-4 p-3 sm:p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="flex items-center space-x-2">
+              <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-red-500" />
+              <span className="text-sm sm:text-base text-red-700">{error}</span>
+            </div>
+          </div>
+        )}
 
         {/* Estadísticas */}
         {stats && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white rounded-lg shadow p-6">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
+            <div className="bg-white p-3 sm:p-4 rounded-lg shadow-sm border border-gray-200">
               <div className="flex items-center">
-                <div className="p-2 bg-yellow-100 rounded-lg">
-                  <Clock className="h-6 w-6 text-yellow-600" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Pendientes</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.pending}</p>
+                <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-500" />
+                <div className="ml-2 sm:ml-3">
+                  <p className="text-xs sm:text-sm text-gray-600">Pendientes</p>
+                  <p className="text-lg sm:text-xl font-bold text-gray-900">{stats.pending}</p>
                 </div>
               </div>
             </div>
-
-            <div className="bg-white rounded-lg shadow p-6">
+            
+            <div className="bg-white p-3 sm:p-4 rounded-lg shadow-sm border border-gray-200">
               <div className="flex items-center">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <CheckCircle className="h-6 w-6 text-green-600" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Aprobados</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.approved}</p>
+                <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-green-500" />
+                <div className="ml-2 sm:ml-3">
+                  <p className="text-xs sm:text-sm text-gray-600">Aprobados</p>
+                  <p className="text-lg sm:text-xl font-bold text-gray-900">{stats.approved}</p>
                 </div>
               </div>
             </div>
-
-            <div className="bg-white rounded-lg shadow p-6">
+            
+            <div className="bg-white p-3 sm:p-4 rounded-lg shadow-sm border border-gray-200">
               <div className="flex items-center">
-                <div className="p-2 bg-red-100 rounded-lg">
-                  <XCircle className="h-6 w-6 text-red-600" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Rechazados</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.rejected}</p>
+                <XCircle className="w-5 h-5 sm:w-6 sm:h-6 text-red-500" />
+                <div className="ml-2 sm:ml-3">
+                  <p className="text-xs sm:text-sm text-gray-600">Rechazados</p>
+                  <p className="text-lg sm:text-xl font-bold text-gray-900">{stats.rejected}</p>
                 </div>
               </div>
             </div>
-
-            <div className="bg-white rounded-lg shadow p-6">
+            
+            <div className="bg-white p-3 sm:p-4 rounded-lg shadow-sm border border-gray-200">
               <div className="flex items-center">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <BarChart3 className="h-6 w-6 text-blue-600" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Total</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+                <BarChart3 className="w-5 h-5 sm:w-6 sm:h-6 text-blue-500" />
+                <div className="ml-2 sm:ml-3">
+                  <p className="text-xs sm:text-sm text-gray-600">Total</p>
+                  <p className="text-lg sm:text-xl font-bold text-gray-900">{stats.total}</p>
                 </div>
               </div>
             </div>
           </div>
         )}
 
-        {/* Error */}
-        {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
-            <div className="flex">
-              <AlertCircle className="h-5 w-5 text-red-400" />
-              <p className="ml-3 text-sm text-red-700">{error}</p>
-            </div>
+        {/* Lista de clips */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+          <div className="p-4 sm:p-6 border-b border-gray-200">
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Todos los clips</h2>
           </div>
-        )}
-
-        {/* Clips Pendientes */}
-        <div className="bg-white rounded-lg shadow">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">Todos los Clips</h2>
-            <p className="text-sm text-gray-600 mt-1">
-              {pendingClips.length} clips en total
-            </p>
-          </div>
-
-          {pendingClips.length === 0 ? (
+          
+          {loading ? (
             <div className="p-8 text-center">
-              <CheckCircle className="h-12 w-12 text-green-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">¡No hay clips!</h3>
-              <p className="text-gray-600">No hay clips en la base de datos.</p>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+              <p className="mt-2 text-gray-600">Cargando clips...</p>
+            </div>
+          ) : pendingClips.length === 0 ? (
+            <div className="p-8 text-center">
+              <p className="text-gray-600">No hay clips para mostrar</p>
             </div>
           ) : (
-            <div className="divide-y divide-gray-200">
-              {pendingClips.map((clip) => (
-                <div key={clip.id} className="p-6">
-                  <div className="flex items-start space-x-4">
-                    {/* Thumbnail */}
-                    <div className="flex-shrink-0">
-                      <img
-                        src={getThumbnailUrl(clip.thumbnailPath)}
-                        alt={clip.title}
-                        className="w-24 h-16 object-cover rounded-lg"
-                      />
+            <div className="overflow-x-auto">
+              <div className="min-w-full">
+                {/* Headers de tabla - ocultos en móvil */}
+                <div className="hidden sm:grid sm:grid-cols-12 gap-4 p-4 sm:p-6 bg-gray-50 border-b border-gray-200 text-sm font-medium text-gray-700">
+                  <div className="col-span-3">Título</div>
+                  <div className="col-span-2">Estado</div>
+                  <div className="col-span-2">Personas</div>
+                  <div className="col-span-2">Fecha</div>
+                  <div className="col-span-3">Acciones</div>
+                </div>
+                
+                {/* Clips */}
+                {pendingClips.map((clip) => (
+                  <div key={clip.id} className="border-b border-gray-200 last:border-b-0">
+                    {/* Desktop view */}
+                    <div className="hidden sm:grid sm:grid-cols-12 gap-4 p-4 sm:p-6 items-center">
+                      <div className="col-span-3">
+                        <h3 className="font-medium text-gray-900 truncate">{clip.title}</h3>
+                        {clip.description && (
+                          <p className="text-sm text-gray-600 truncate">{clip.description}</p>
+                        )}
+                      </div>
+                      
+                      <div className="col-span-2">
+                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                          clip.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                          clip.status === 'approved' ? 'bg-green-100 text-green-800' :
+                          'bg-red-100 text-red-800'
+                        }`}>
+                          {clip.status === 'pending' ? 'Pendiente' :
+                           clip.status === 'approved' ? 'Aprobado' : 'Rechazado'}
+                        </span>
+                      </div>
+                      
+                      <div className="col-span-2">
+                        {clip.persons && clip.persons.length > 0 ? (
+                          <div className="flex flex-wrap gap-1">
+                            {clip.persons.slice(0, 2).map((p, i) => (
+                              <span key={i} className="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full">
+                                {p}
+                              </span>
+                            ))}
+                            {clip.persons.length > 2 && (
+                              <span className="text-xs text-gray-500">+{clip.persons.length - 2}</span>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-gray-500 text-sm">Sin personas</span>
+                        )}
+                      </div>
+                      
+                      <div className="col-span-2 text-sm text-gray-600">
+                        {formatDate(clip.createdAt)}
+                      </div>
+                      
+                      <div className="col-span-3 flex space-x-2">
+                        {clip.status === 'pending' && (
+                          <>
+                            <button
+                              onClick={() => handleApprove(clip)}
+                              className="btn-primary text-xs py-1 px-2"
+                            >
+                              <CheckCircle className="w-3 h-3 mr-1" />
+                              Aprobar
+                            </button>
+                            <button
+                              onClick={() => openRejectModal(clip)}
+                              className="btn-secondary text-xs py-1 px-2"
+                            >
+                              <XCircle className="w-3 h-3 mr-1" />
+                              Rechazar
+                            </button>
+                          </>
+                        )}
+                        <button
+                          onClick={() => openDeleteModal(clip)}
+                          className="text-red-600 hover:text-red-700 text-xs py-1 px-2"
+                        >
+                          <Trash2 className="w-3 h-3 mr-1" />
+                          Borrar
+                        </button>
+                      </div>
                     </div>
-
-                    {/* Información del clip */}
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-lg font-medium text-gray-900 mb-1">
-                        {clip.title}
-                      </h3>
-                      {clip.description && (
-                        <p className="text-sm text-gray-600 mb-2 line-clamp-2">
-                          {clip.description}
-                        </p>
-                      )}
-                      {clip.persons && clip.persons.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mb-2">
-                          {clip.persons.map((person, i) => (
-                            <span key={i} className="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full">
-                              {person}
-                            </span>
-                          ))}
+                    
+                    {/* Mobile view */}
+                    <div className="sm:hidden p-4">
+                      <div className="flex items-start space-x-3">
+                        <div className="flex-shrink-0">
+                          <img
+                            src={getThumbnailUrl(clip.thumbnailPath)}
+                            alt={clip.title}
+                            className="w-16 h-12 object-cover rounded"
+                          />
                         </div>
-                      )}
-                      <p className="text-xs text-gray-500">
-                        Subido el {formatDate(clip.createdAt)}
-                      </p>
-                      <p className="text-xs mt-1">
-                        <span className={`inline-block px-2 py-0.5 rounded-full text-white text-xs ${clip.status === 'approved' ? 'bg-green-600' : clip.status === 'pending' ? 'bg-yellow-500' : 'bg-red-600'}`}>{clip.status}</span>
-                      </p>
-                    </div>
-
-                    {/* Botones de acción */}
-                    <div className="flex-shrink-0 flex space-x-2">
-                      {clip.status === 'pending' && (
-                        <button
-                          onClick={() => handleApprove(clip)}
-                          className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                        >
-                          <CheckCircle className="h-4 w-4 mr-1" />
-                          Aprobar
-                        </button>
-                      )}
-                      {clip.status === 'pending' && (
-                        <button
-                          onClick={() => openRejectModal(clip)}
-                          className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                        >
-                          <XCircle className="h-4 w-4 mr-1" />
-                          Rechazar
-                        </button>
-                      )}
-                      <button
-                        onClick={() => openDeleteModal(clip)}
-                        className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-                      >
-                        <Trash2 className="h-4 w-4 mr-1" />
-                        Borrar
-                      </button>
+                        
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-medium text-gray-900 text-sm truncate">{clip.title}</h3>
+                          {clip.description && (
+                            <p className="text-xs text-gray-600 truncate mt-1">{clip.description}</p>
+                          )}
+                          
+                          <div className="flex items-center space-x-2 mt-2">
+                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                              clip.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                              clip.status === 'approved' ? 'bg-green-100 text-green-800' :
+                              'bg-red-100 text-red-800'
+                            }`}>
+                              {clip.status === 'pending' ? 'Pendiente' :
+                               clip.status === 'approved' ? 'Aprobado' : 'Rechazado'}
+                            </span>
+                            
+                            <span className="text-xs text-gray-500">
+                              {formatDate(clip.createdAt)}
+                            </span>
+                          </div>
+                          
+                          {clip.persons && clip.persons.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-2">
+                              {clip.persons.slice(0, 3).map((p, i) => (
+                                <span key={i} className="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full">
+                                  {p}
+                                </span>
+                              ))}
+                              {clip.persons.length > 3 && (
+                                <span className="text-xs text-gray-500">+{clip.persons.length - 3}</span>
+                              )}
+                            </div>
+                          )}
+                          
+                          <div className="flex space-x-2 mt-3">
+                            {clip.status === 'pending' && (
+                              <>
+                                <button
+                                  onClick={() => handleApprove(clip)}
+                                  className="btn-primary text-xs py-1 px-2"
+                                >
+                                  <CheckCircle className="w-3 h-3 mr-1" />
+                                  Aprobar
+                                </button>
+                                <button
+                                  onClick={() => openRejectModal(clip)}
+                                  className="btn-secondary text-xs py-1 px-2"
+                                >
+                                  <XCircle className="w-3 h-3 mr-1" />
+                                  Rechazar
+                                </button>
+                              </>
+                            )}
+                            <button
+                              onClick={() => openDeleteModal(clip)}
+                              className="text-red-600 hover:text-red-700 text-xs py-1 px-2"
+                            >
+                              <Trash2 className="w-3 h-3 mr-1" />
+                              Borrar
+                            </button>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           )}
         </div>
       </div>
 
-      {/* Modal de Rechazo */}
+      {/* Modal de rechazo */}
       {showRejectModal && selectedClip && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
-                Rechazar Clip: {selectedClip.title}
-              </h3>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Razón del rechazo:
-                </label>
-                <textarea
-                  value={rejectionReason}
-                  onChange={(e) => setRejectionReason(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  rows={3}
-                  placeholder="Explica por qué rechazas este clip..."
-                />
-              </div>
-              <div className="flex justify-end space-x-3">
-                <button
-                  onClick={() => {
-                    setShowRejectModal(false);
-                    setSelectedClip(null);
-                    setRejectionReason('');
-                  }}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={() => handleReject(selectedClip)}
-                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                >
-                  Rechazar
-                </button>
-              </div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black bg-opacity-50" onClick={() => setShowRejectModal(false)} />
+          <div className="relative bg-white rounded-lg p-4 sm:p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-4">Rechazar clip</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              ¿Por qué estás rechazando "{selectedClip.title}"?
+            </p>
+            <textarea
+              value={rejectionReason}
+              onChange={(e) => setRejectionReason(e.target.value)}
+              placeholder="Escribe la razón del rechazo..."
+              className="w-full p-3 border border-gray-300 rounded-lg resize-none text-sm"
+              rows={3}
+            />
+            <div className="flex space-x-3 mt-4">
+              <button
+                onClick={() => setShowRejectModal(false)}
+                className="btn-secondary text-sm py-2 px-4"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => handleReject(selectedClip)}
+                className="btn-primary text-sm py-2 px-4"
+              >
+                Rechazar
+              </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Modal de Borrado */}
+      {/* Modal de borrado */}
       {showDeleteModal && selectedClip && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
-                Borrar Clip Permanentemente: {selectedClip.title}
-              </h3>
-              <div className="mb-4">
-                <p className="text-sm text-gray-600 mb-4">
-                  ⚠️ Esta acción es irreversible. El clip será eliminado permanentemente de la base de datos y de Cloudinary.
-                </p>
-              </div>
-              <div className="flex justify-end space-x-3">
-                <button
-                  onClick={() => {
-                    setShowDeleteModal(false);
-                    setSelectedClip(null);
-                  }}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={() => handleDelete(selectedClip)}
-                  className="px-4 py-2 text-sm font-medium text-white bg-gray-800 border border-transparent rounded-md hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-                >
-                  Borrar Permanentemente
-                </button>
-              </div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black bg-opacity-50" onClick={() => setShowDeleteModal(false)} />
+          <div className="relative bg-white rounded-lg p-4 sm:p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-4">Borrar clip</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              ¿Estás seguro de que quieres borrar "{selectedClip.title}"? Esta acción no se puede deshacer.
+            </p>
+            <div className="flex space-x-3">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="btn-secondary text-sm py-2 px-4"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => handleDelete(selectedClip)}
+                className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm"
+              >
+                Borrar
+              </button>
             </div>
           </div>
         </div>

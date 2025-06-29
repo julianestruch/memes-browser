@@ -88,7 +88,7 @@ export default function VideoModal({ clip, isOpen, onClose }: VideoModalProps) {
   if (!isOpen || !clip) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4">
       {/* Overlay */}
       <div 
         className="absolute inset-0 bg-black bg-opacity-75"
@@ -96,15 +96,15 @@ export default function VideoModal({ clip, isOpen, onClose }: VideoModalProps) {
       />
       
       {/* Modal */}
-      <div className="relative bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden">
+      <div className="relative bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">{clip.title}</h2>
+        <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-200">
+          <h2 className="text-base sm:text-lg font-semibold text-gray-900 truncate pr-2">{clip.title}</h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
           >
-            <X className="w-5 h-5 text-gray-500" />
+            <X className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
           </button>
         </div>
 
@@ -112,7 +112,7 @@ export default function VideoModal({ clip, isOpen, onClose }: VideoModalProps) {
         <div className="relative">
           <video
             ref={videoRef}
-            className="w-full h-auto max-h-[60vh]"
+            className="w-full h-auto max-h-[50vh] sm:max-h-[60vh]"
             onTimeUpdate={handleTimeUpdate}
             onLoadedMetadata={handleLoadedMetadata}
             onPlay={() => setIsPlaying(true)}
@@ -124,22 +124,22 @@ export default function VideoModal({ clip, isOpen, onClose }: VideoModalProps) {
           </video>
 
           {/* Controles de video */}
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
-            <div className="flex items-center space-x-4">
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2 sm:p-4">
+            <div className="flex items-center space-x-2 sm:space-x-4">
               {/* Botón play/pause */}
               <button
                 onClick={handlePlayPause}
-                className="text-white hover:text-gray-300 transition-colors"
+                className="text-white hover:text-gray-300 transition-colors flex-shrink-0"
               >
                 {isPlaying ? (
-                  <Pause className="w-6 h-6" />
+                  <Pause className="w-5 h-5 sm:w-6 sm:h-6" />
                 ) : (
-                  <Play className="w-6 h-6" />
+                  <Play className="w-5 h-5 sm:w-6 sm:h-6" />
                 )}
               </button>
 
               {/* Barra de progreso */}
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 <input
                   type="range"
                   min="0"
@@ -151,19 +151,19 @@ export default function VideoModal({ clip, isOpen, onClose }: VideoModalProps) {
               </div>
 
               {/* Tiempo */}
-              <span className="text-white text-sm">
+              <span className="text-white text-xs sm:text-sm flex-shrink-0">
                 {formatTime(currentTime)} / {formatTime(duration)}
               </span>
 
               {/* Botón mute */}
               <button
                 onClick={handleMuteToggle}
-                className="text-white hover:text-gray-300 transition-colors"
+                className="text-white hover:text-gray-300 transition-colors flex-shrink-0"
               >
                 {isMuted ? (
-                  <VolumeX className="w-5 h-5" />
+                  <VolumeX className="w-4 h-4 sm:w-5 sm:h-5" />
                 ) : (
-                  <Volume2 className="w-5 h-5" />
+                  <Volume2 className="w-4 h-4 sm:w-5 sm:h-5" />
                 )}
               </button>
             </div>
@@ -171,9 +171,9 @@ export default function VideoModal({ clip, isOpen, onClose }: VideoModalProps) {
         </div>
 
         {/* Información del clip */}
-        <div className="p-4">
+        <div className="p-3 sm:p-4">
           {clip.description && (
-            <p className="text-gray-600 mb-3">{clip.description}</p>
+            <p className="text-sm sm:text-base text-gray-600">{clip.description}</p>
           )}
         </div>
       </div>
@@ -185,24 +185,35 @@ export default function VideoModal({ clip, isOpen, onClose }: VideoModalProps) {
 const styles = `
   .slider::-webkit-slider-thumb {
     appearance: none;
-    height: 16px;
-    width: 16px;
+    height: 12px;
+    width: 12px;
     border-radius: 50%;
     background: #3b82f6;
     cursor: pointer;
   }
   
   .slider::-moz-range-thumb {
-    height: 16px;
-    width: 16px;
+    height: 12px;
+    width: 12px;
     border-radius: 50%;
     background: #3b82f6;
     cursor: pointer;
-    border: none;
+  }
+  
+  @media (min-width: 640px) {
+    .slider::-webkit-slider-thumb {
+      height: 16px;
+      width: 16px;
+    }
+    
+    .slider::-moz-range-thumb {
+      height: 16px;
+      width: 16px;
+    }
   }
 `;
 
-// Agregar estilos al head
+// Inyectar estilos
 if (typeof document !== 'undefined') {
   const styleSheet = document.createElement('style');
   styleSheet.textContent = styles;

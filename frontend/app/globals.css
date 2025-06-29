@@ -10,6 +10,27 @@
   body {
     @apply bg-gray-50 text-gray-900;
   }
+  
+  /* Mejorar la experiencia táctil en móviles */
+  input, textarea, select, button {
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* Prevenir zoom en inputs en iOS */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="search"],
+  input[type="tel"],
+  input[type="url"],
+  textarea {
+    font-size: 16px;
+  }
+  
+  /* Mejorar scroll en móviles */
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
 }
 
 @layer components {
@@ -32,10 +53,42 @@
   .gradient-bg {
     @apply bg-gradient-to-br from-primary-50 to-blue-50;
   }
+  
+  /* Estilos específicos para móviles */
+  @media (max-width: 640px) {
+    .btn-primary,
+    .btn-secondary {
+      @apply py-2.5 px-3 text-sm;
+      min-height: 44px; /* Tamaño mínimo recomendado para touch */
+    }
+    
+    .input-field {
+      @apply py-2.5 text-sm;
+      min-height: 44px;
+    }
+  }
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+  
+  /* Utilidades para responsive */
+  .mobile-only {
+    @apply block sm:hidden;
+  }
+  
+  .desktop-only {
+    @apply hidden sm:block;
+  }
+  
+  /* Mejorar legibilidad en móviles */
+  .mobile-text {
+    @apply text-sm sm:text-base;
+  }
+  
+  .mobile-heading {
+    @apply text-lg sm:text-xl md:text-2xl;
   }
 } 

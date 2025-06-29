@@ -4,150 +4,168 @@ import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import ClipCard from '@/components/ClipCard';
 import VideoModal from '@/components/VideoModal';
-import { Clip, clipsApi } from '@/lib/api';
+import { Search, Loader2 } from 'lucide-react';
+import { clipsApi, Clip } from '@/lib/api';
 
 export default function HomePage() {
-  const [recentClips, setRecentClips] = useState<Clip[]>([]);
+  const [clips, setClips] = useState<Clip[]>([]);
+  const [filteredClips, setFilteredClips] = useState<Clip[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
   const [selectedClip, setSelectedClip] = useState<Clip | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [search, setSearch] = useState('');
-  const [searchResults, setSearchResults] = useState<Clip[] | null>(null);
-  const [searchLoading, setSearchLoading] = useState(false);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
-    loadRecentClips();
+    loadClips();
   }, []);
 
-  const loadRecentClips = async () => {
+  useEffect(() => {
+    if (searchTerm.trim() === '') {
+      setFilteredClips(clips);
+    } else {
+      const filtered = clips.filter(clip => 
+        clip.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        clip.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        clip.persons?.some(person => 
+          person.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      );
+      setFilteredClips(filtered);
+    }
+  }, [searchTerm, clips]);
+
+  const loadClips = async () => {
     try {
-      const response = await clipsApi.getRecent(12);
-      setRecentClips(response.clips);
+      setLoading(true);
+      const data = await clipsApi.getAll();
+      setClips(data.clips);
+      setFilteredClips(data.clips);
     } catch (error) {
-      console.error('Error cargando clips recientes:', error);
-      setError('No se pudieron cargar los clips recientes');
+      console.error('Error loading clips:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handlePlayClip = (clip: Clip) => {
+  const handlePlay = (clip: Clip) => {
     setSelectedClip(clip);
-    setIsModalOpen(true);
+    setShowModal(true);
   };
 
   const handleCloseModal = () => {
-    setIsModalOpen(false);
+    setShowModal(false);
     setSelectedClip(null);
-  };
-
-  const handleSemanticSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!search.trim()) return;
-    setSearchLoading(true);
-    setError(null);
-    try {
-      const response = await clipsApi.semanticSearch(search.trim(), 12);
-      setSearchResults(response.results);
-    } catch (err: any) {
-      setError(err.message || 'Error en la búsqueda');
-      setSearchResults([]);
-    } finally {
-      setSearchLoading(false);
-    }
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
-            Tus clips de video
+      
+      <main className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-8">
+        {/* Hero Section */}
+        <div className="text-center mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-2 sm:mb-4">
+            Busca y descubre clips increíbles
           </h1>
-          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            Sube tus clips de video y visualízalos fácilmente en un solo lugar.
+          <p className="text-sm sm:text-lg text-gray-600 max-w-2xl mx-auto">
+            Encuentra el contenido que buscas con búsquedas semánticas inteligentes
           </p>
         </div>
-        {/* Buscador semántico */}
-        <form onSubmit={handleSemanticSearch} className="mb-10 max-w-2xl mx-auto">
-          <label className="block text-lg font-medium text-gray-800 mb-2 text-left">Describí el meme</label>
-          <textarea
-            className="w-full p-4 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-primary-400 focus:border-primary-400 transition min-h-[80px] text-base bg-white"
-            placeholder={"Describe como si le estuvieras hablando a un amigo...\nej: 'el perrito que le inyectan wifi' o 'tipo en el micro mirando ventana'"}
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            disabled={searchLoading}
-          />
-          <button
-            type="submit"
-            className="btn-primary mt-4 px-8 py-2 text-lg"
-            disabled={searchLoading || !search.trim()}
-          >
-            {searchLoading ? 'Buscando...' : 'Buscar'}
-          </button>
-        </form>
-        {error ? (
-          <div className="text-center py-12">
-            <p className="text-lg text-red-600">{error}</p>
+
+        {/* Search Bar */}
+        <div className="max-w-2xl mx-auto mb-6 sm:mb-8">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
+            <input
+              type="text"
+              placeholder="Busca por título, descripción o personas..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm sm:text-base"
+            />
           </div>
-        ) : searchResults ? (
-          <div>
-            <h2 className="text-2xl font-semibold text-gray-900 mb-6">
-              Resultados de la búsqueda
-            </h2>
-            {searchResults.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                <ClipCard
-                  key={searchResults[0].id}
-                  clip={searchResults[0]}
-                  onPlay={handlePlayClip}
-                />
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  No se encontraron resultados para tu búsqueda
-                </h3>
-                <p className="text-gray-600 mb-6">
-                  Probá describiendo el meme de otra forma o subí un nuevo clip
-                </p>
-              </div>
-            )}
+        </div>
+
+        {/* Results Count */}
+        {!loading && (
+          <div className="text-center mb-4 sm:mb-6">
+            <p className="text-sm sm:text-base text-gray-600">
+              {filteredClips.length === 0 
+                ? 'No se encontraron clips' 
+                : `${filteredClips.length} clip${filteredClips.length !== 1 ? 's' : ''} encontrado${filteredClips.length !== 1 ? 's' : ''}`
+              }
+            </p>
           </div>
-        ) : recentClips.length > 0 ? (
-          <div>
-            <h2 className="text-2xl font-semibold text-gray-900 mb-6">
-              Clips recientes
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {recentClips.map((clip) => (
-                <ClipCard
-                  key={clip.id}
-                  clip={clip}
-                  onPlay={handlePlayClip}
-                />
-              ))}
+        )}
+
+        {/* Loading State */}
+        {loading && (
+          <div className="flex justify-center items-center py-12">
+            <div className="text-center">
+              <Loader2 className="w-8 h-8 sm:w-12 sm:h-12 animate-spin text-primary-600 mx-auto mb-4" />
+              <p className="text-sm sm:text-base text-gray-600">Cargando clips...</p>
             </div>
           </div>
-        ) : (
+        )}
+
+        {/* Clips Grid */}
+        {!loading && filteredClips.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+            {filteredClips.map((clip) => (
+              <ClipCard
+                key={clip.id}
+                clip={clip}
+                onPlay={handlePlay}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Empty State */}
+        {!loading && filteredClips.length === 0 && searchTerm && (
           <div className="text-center py-12">
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
+            <Search className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg sm:text-xl font-medium text-gray-900 mb-2">
+              No se encontraron resultados
+            </h3>
+            <p className="text-sm sm:text-base text-gray-600 mb-4">
+              Intenta con otros términos de búsqueda
+            </p>
+            <button
+              onClick={() => setSearchTerm('')}
+              className="btn-primary text-sm sm:text-base"
+            >
+              Limpiar búsqueda
+            </button>
+          </div>
+        )}
+
+        {/* No Clips State */}
+        {!loading && clips.length === 0 && !searchTerm && (
+          <div className="text-center py-12">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Search className="w-8 h-8 sm:w-10 sm:h-10 text-gray-400" />
+            </div>
+            <h3 className="text-lg sm:text-xl font-medium text-gray-900 mb-2">
               No hay clips disponibles
             </h3>
-            <p className="text-gray-600 mb-6">
-              Sube tu primer clip para comenzar a llenar tu galería
+            <p className="text-sm sm:text-base text-gray-600 mb-4">
+              Sé el primero en subir un clip
             </p>
             <a
               href="/upload"
-              className="btn-primary inline-flex items-center"
+              className="btn-primary text-sm sm:text-base"
             >
               Subir primer clip
             </a>
           </div>
         )}
       </main>
+
+      {/* Video Modal */}
       <VideoModal
         clip={selectedClip}
-        isOpen={isModalOpen}
+        isOpen={showModal}
         onClose={handleCloseModal}
       />
     </div>
