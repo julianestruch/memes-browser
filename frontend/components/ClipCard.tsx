@@ -40,26 +40,25 @@ export default function ClipCard({ clip, onPlay, smallMobile }: ClipCardProps) {
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Thumbnail */}
-      <div className={`relative aspect-video bg-gray-200 overflow-hidden ${smallMobile ? 'rounded-md' : ''}`} style={smallMobile ? { minHeight: 90, maxHeight: 120 } : {}}>
+      <div className={`${smallMobile ? 'rounded-md' : 'rounded-t-lg'} w-full bg-gray-200 overflow-hidden relative`} style={smallMobile ? { minHeight: 90, maxHeight: 120 } : {}}>
         {!imageError ? (
           <img
             src={getThumbnailUrl(clip.thumbnailPath)}
             alt={clip.title}
-            className={`w-full h-full object-cover transition-transform duration-200 group-hover:scale-110 ${smallMobile ? 'rounded-md' : ''}`}
+            className={`w-full ${smallMobile ? 'h-[90px]' : 'h-40'} object-cover ${smallMobile ? 'rounded-md' : 'rounded-t-lg'}`}
             onError={() => setImageError(true)}
             style={smallMobile ? { minHeight: 90, maxHeight: 120 } : {}}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gray-300">
-            <Play className={`${smallMobile ? 'w-6 h-6' : 'w-8 h-8 sm:w-12 sm:h-12'} text-gray-400`} />
+          <div className={`w-full ${smallMobile ? 'h-[90px]' : 'h-40'} flex items-center justify-center bg-gray-300 ${smallMobile ? 'rounded-md' : 'rounded-t-lg'}`}>
+            <Play className={`${smallMobile ? 'w-6 h-6' : 'w-10 h-10'} text-gray-400`} />
           </div>
         )}
-        
-        {/* Overlay de reproducción */}
+        {/* Overlay de reproducción clickable */}
         <div
-          className={`absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 flex items-center justify-center`}
+          className={`absolute inset-0 flex items-center justify-center transition-all duration-200 ${isHovered ? 'bg-black bg-opacity-30' : 'bg-black bg-opacity-0'}`}
           onClick={handlePlay}
-          style={{ cursor: 'pointer' }}
+          style={{ cursor: 'pointer', zIndex: 2 }}
         >
           <div className={`${smallMobile ? 'w-8 h-8' : 'w-12 h-12 sm:w-16 sm:h-16'} bg-white bg-opacity-90 rounded-full flex items-center justify-center transform transition-all duration-200 ${isHovered ? 'scale-100' : 'scale-0'}`}>
             <Play className={`${smallMobile ? 'w-4 h-4' : 'w-6 h-6 sm:w-8 sm:h-8'} text-gray-800 ml-1`} />
