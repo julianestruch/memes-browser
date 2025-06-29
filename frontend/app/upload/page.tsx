@@ -23,6 +23,7 @@ export default function UploadPage() {
     'Maslaton', 'Marra', 'Olivia Rodrigo', 'Ana de armas', 'Coscu', 'El Momo', 'Sydney Sweeney', 'Bri Marcos', 'Fantino', 'Tronco', 'Beltran Briones', 'Dua Lipa', 'Messi',
     'Emilia Mernes', 'Nicki Nicole',
     'Jordi Wild', 'George Floyd', 'Neo pistea', 'Duki', 'Ysy', 'Llados', 'El xokas', 'Mascherano',
+    'Paren la mano', 'German beder', 'Luquitas rodriguez', 'Alfredo montes de oca', 'Roberto galati',
     'NN'
   ];
   const [persons, setPersons] = useState<string[]>([]);
