@@ -62,41 +62,33 @@ export default function HomePage() {
       <Header />
       
       <main className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-8">
-        {/* Hero Section */}
-        <div className="text-center mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-2 sm:mb-4">
-            Busca y descubre clips increíbles
-          </h1>
-          <p className="text-sm sm:text-lg text-gray-600 max-w-2xl mx-auto">
-            Encuentra el contenido que buscas con búsquedas semánticas inteligentes
-          </p>
-        </div>
-
-        {/* Search Bar */}
+        {/* Buscador grande en móvil */}
         <div className="max-w-2xl mx-auto mb-6 sm:mb-8">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-6 h-6 sm:w-5 sm:h-5" />
             <input
               type="text"
               placeholder="Busca por título, descripción o personas..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm sm:text-base"
+              className="w-full pl-14 pr-4 py-4 sm:py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-lg sm:text-base font-semibold shadow-sm"
+              style={{ boxShadow: '0 2px 8px 0 rgba(0,0,0,0.04)' }}
             />
           </div>
         </div>
 
-        {/* Results Count */}
-        {!loading && (
-          <div className="text-center mb-4 sm:mb-6">
-            <p className="text-sm sm:text-base text-gray-600">
+        {/* Título grande sobre el grid */}
+        <div className="text-center mb-4 sm:mb-8">
+          <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-1 sm:mb-4">Clips recientes</h1>
+          {!loading && (
+            <p className="text-base sm:text-lg text-gray-600">
               {filteredClips.length === 0 
                 ? 'No se encontraron clips' 
                 : `${filteredClips.length} clip${filteredClips.length !== 1 ? 's' : ''} encontrado${filteredClips.length !== 1 ? 's' : ''}`
               }
             </p>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* Loading State */}
         {loading && (
@@ -110,13 +102,16 @@ export default function HomePage() {
 
         {/* Clips Grid */}
         {!loading && filteredClips.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
             {filteredClips.map((clip) => (
-              <ClipCard
-                key={clip.id}
-                clip={clip}
-                onPlay={handlePlay}
-              />
+              <div className="sm:p-0 p-1">
+                <ClipCard
+                  key={clip.id}
+                  clip={clip}
+                  onPlay={handlePlay}
+                  smallMobile
+                />
+              </div>
             ))}
           </div>
         )}
