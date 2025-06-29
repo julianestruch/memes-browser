@@ -24,7 +24,6 @@ export default function AdminPanel() {
   const [rejectionReason, setRejectionReason] = useState('');
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [deletePassword, setDeletePassword] = useState('');
   // Estado de login
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loginUser, setLoginUser] = useState('');
@@ -124,11 +123,6 @@ export default function AdminPanel() {
   };
 
   const handleDelete = async (clip: PendingClip) => {
-    if (deletePassword !== 'admin123') {
-      setError('Contraseña incorrecta para borrar');
-      return;
-    }
-
     try {
       await adminApi.deleteClip(clip.id.toString());
       setPendingClips(prev => prev.filter(c => c.id !== clip.id));
@@ -140,7 +134,6 @@ export default function AdminPanel() {
         });
       }
       setShowDeleteModal(false);
-      setDeletePassword('');
       setSelectedClip(null);
     } catch (err) {
       setError('Error borrando el clip');
@@ -157,7 +150,6 @@ export default function AdminPanel() {
   const openDeleteModal = (clip: PendingClip) => {
     setSelectedClip(clip);
     setShowDeleteModal(true);
-    setDeletePassword('');
   };
 
   const formatDate = (dateString: string) => {
@@ -446,23 +438,12 @@ export default function AdminPanel() {
                 <p className="text-sm text-gray-600 mb-4">
                   ⚠️ Esta acción es irreversible. El clip será eliminado permanentemente de la base de datos y de Cloudinary.
                 </p>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Contraseña de administrador:
-                </label>
-                <input
-                  type="password"
-                  value={deletePassword}
-                  onChange={(e) => setDeletePassword(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="admin123"
-                />
               </div>
               <div className="flex justify-end space-x-3">
                 <button
                   onClick={() => {
                     setShowDeleteModal(false);
                     setSelectedClip(null);
-                    setDeletePassword('');
                   }}
                   className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
                 >
