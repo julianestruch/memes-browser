@@ -37,7 +37,7 @@ export default function HomePage() {
   const loadClips = async () => {
     try {
       setLoading(true);
-      const data = await clipsApi.getAll();
+      const data = await clipsApi.getRecent(50);
       setClips(data.clips);
       setFilteredClips(data.clips);
     } catch (error) {

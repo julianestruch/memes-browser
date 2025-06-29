@@ -37,7 +37,7 @@ export default function RepositoryPage() {
   const loadClips = async () => {
     try {
       setLoading(true);
-      const data = await clipsApi.getAll();
+      const data = await clipsApi.getRecent(100);
       setClips(data.clips);
       setFilteredClips(data.clips);
     } catch (error) {
