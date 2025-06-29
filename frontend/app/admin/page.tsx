@@ -25,10 +25,44 @@ export default function AdminPanel() {
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deletePassword, setDeletePassword] = useState('');
+  // Estado de login
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [loginUser, setLoginUser] = useState('');
+  const [loginPass, setLoginPass] = useState('');
+  const [loginError, setLoginError] = useState('');
 
   useEffect(() => {
-    loadData();
+    // Verificar si ya está logueado
+    if (typeof window !== 'undefined' && localStorage.getItem('admin_logged_in') === 'true') {
+      setIsLoggedIn(true);
+    }
   }, []);
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      loadData();
+    }
+  }, [isLoggedIn]);
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (loginUser === 'admin' && loginPass === '1234') {
+      setIsLoggedIn(true);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('admin_logged_in', 'true');
+      }
+      setLoginError('');
+    } else {
+      setLoginError('Usuario o contraseña incorrectos');
+    }
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('admin_logged_in');
+    }
+  };
 
   const loadData = async () => {
     try {
@@ -136,6 +170,44 @@ export default function AdminPanel() {
     });
   };
 
+  if (!isLoggedIn) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <form onSubmit={handleLogin} className="bg-white p-8 rounded-lg shadow-md w-full max-w-sm">
+          <h2 className="text-2xl font-bold mb-6 text-center">Login Administrador</h2>
+          {loginError && <div className="mb-4 text-red-600 text-sm">{loginError}</div>}
+          <div className="mb-4">
+            <label className="block text-gray-700 mb-2">Usuario</label>
+            <input
+              type="text"
+              value={loginUser}
+              onChange={e => setLoginUser(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              autoFocus
+              autoComplete="username"
+            />
+          </div>
+          <div className="mb-6">
+            <label className="block text-gray-700 mb-2">Contraseña</label>
+            <input
+              type="password"
+              value={loginPass}
+              onChange={e => setLoginPass(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              autoComplete="current-password"
+            />
+          </div>
+          <button
+            type="submit"
+            className="w-full bg-blue-600 text-white py-2 rounded-md font-semibold hover:bg-blue-700 transition-colors"
+          >
+            Entrar
+          </button>
+        </form>
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -151,9 +223,17 @@ export default function AdminPanel() {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Panel de Administrador</h1>
-          <p className="text-gray-600">Gestiona y aprueba clips subidos por los usuarios</p>
+        <div className="mb-8 flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Panel de Administrador</h1>
+            <p className="text-gray-600">Gestiona y aprueba clips subidos por los usuarios</p>
+          </div>
+          <button
+            onClick={handleLogout}
+            className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md font-medium hover:bg-gray-300"
+          >
+            Cerrar sesión
+          </button>
         </div>
 
         {/* Estadísticas */}
