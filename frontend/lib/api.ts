@@ -160,6 +160,16 @@ export const adminApi = {
     const response = await api.delete(`/api/clips/admin/delete/${clipId}`);
     return response.data;
   },
+
+  /**
+   * Obtiene todos los clips (pendientes, aprobados y rechazados)
+   */
+  getAllClips: async (limit: number = 50, skip: number = 0): Promise<{ clips: Clip[]; total: number }> => {
+    const response = await api.get('/api/clips/admin/all', {
+      params: { limit, skip },
+    });
+    return response.data;
+  },
 };
 
 /**

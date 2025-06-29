@@ -594,4 +594,45 @@ router.delete('/admin/delete/:id', async (req, res) => {
   }
 });
 
+/**
+ * GET /api/admin/all
+ * Obtiene todos los clips (pendientes, aprobados y rechazados)
+ */
+router.get('/admin/all', async (req, res) => {
+  const { limit = 50, skip = 0 } = req.query;
+  try {
+    const Clip = require('../models/Clip');
+    const clips = await Clip.find({})
+      .sort({ created_at: -1 })
+      .limit(parseInt(limit))
+      .skip(parseInt(skip));
+    const formattedClips = clips.map(clip => ({
+      id: clip._id,
+      title: clip.title,
+      description: clip.description,
+      filePath: clip.video_url || clip.file_path,
+      thumbnailPath: clip.thumbnail_path,
+      createdAt: clip.created_at,
+      persons: clip.persons ? clip.persons.split(',') : [],
+      duration: clip.duration,
+      width: clip.width,
+      height: clip.height,
+      status: clip.status,
+      approved_at: clip.approved_at,
+      approved_by: clip.approved_by,
+      rejection_reason: clip.rejection_reason
+    }));
+    res.json({
+      clips: formattedClips,
+      total: formattedClips.length
+    });
+  } catch (error) {
+    console.error('❌ Error obteniendo todos los clips:', error);
+    res.status(500).json({
+      error: 'Error obteniendo todos los clips',
+      message: error.message
+    });
+  }
+});
+
 module.exports = router;

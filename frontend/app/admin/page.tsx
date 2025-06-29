@@ -33,12 +33,12 @@ export default function AdminPanel() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [statsData, pendingData] = await Promise.all([
+      const [statsData, allData] = await Promise.all([
         adminApi.getStats(),
-        adminApi.getPendingClips()
+        adminApi.getAllClips()
       ]);
       setStats(statsData);
-      setPendingClips(pendingData.clips as PendingClip[]);
+      setPendingClips(allData.clips as PendingClip[]);
     } catch (err) {
       setError('Error cargando datos del panel de administrador');
       console.error(err);
@@ -222,17 +222,17 @@ export default function AdminPanel() {
         {/* Clips Pendientes */}
         <div className="bg-white rounded-lg shadow">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">Clips Pendientes de Aprobación</h2>
+            <h2 className="text-lg font-semibold text-gray-900">Todos los Clips</h2>
             <p className="text-sm text-gray-600 mt-1">
-              {pendingClips.length} clips esperando revisión
+              {pendingClips.length} clips en total
             </p>
           </div>
 
           {pendingClips.length === 0 ? (
             <div className="p-8 text-center">
               <CheckCircle className="h-12 w-12 text-green-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">¡No hay clips pendientes!</h3>
-              <p className="text-gray-600">Todos los clips han sido revisados y procesados.</p>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">¡No hay clips!</h3>
+              <p className="text-gray-600">No hay clips en la base de datos.</p>
             </div>
           ) : (
             <div className="divide-y divide-gray-200">
@@ -270,24 +270,31 @@ export default function AdminPanel() {
                       <p className="text-xs text-gray-500">
                         Subido el {formatDate(clip.createdAt)}
                       </p>
+                      <p className="text-xs mt-1">
+                        <span className={`inline-block px-2 py-0.5 rounded-full text-white text-xs ${clip.status === 'approved' ? 'bg-green-600' : clip.status === 'pending' ? 'bg-yellow-500' : 'bg-red-600'}`}>{clip.status}</span>
+                      </p>
                     </div>
 
                     {/* Botones de acción */}
                     <div className="flex-shrink-0 flex space-x-2">
-                      <button
-                        onClick={() => handleApprove(clip)}
-                        className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                      >
-                        <CheckCircle className="h-4 w-4 mr-1" />
-                        Aprobar
-                      </button>
-                      <button
-                        onClick={() => openRejectModal(clip)}
-                        className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                      >
-                        <XCircle className="h-4 w-4 mr-1" />
-                        Rechazar
-                      </button>
+                      {clip.status === 'pending' && (
+                        <button
+                          onClick={() => handleApprove(clip)}
+                          className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                        >
+                          <CheckCircle className="h-4 w-4 mr-1" />
+                          Aprobar
+                        </button>
+                      )}
+                      {clip.status === 'pending' && (
+                        <button
+                          onClick={() => openRejectModal(clip)}
+                          className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                        >
+                          <XCircle className="h-4 w-4 mr-1" />
+                          Rechazar
+                        </button>
+                      )}
                       <button
                         onClick={() => openDeleteModal(clip)}
                         className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
