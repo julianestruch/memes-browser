@@ -1,0 +1,41 @@
+{
+  "name": "clipsearch-backend",
+  "version": "1.0.0",
+  "description": "Backend API para ClipSearch",
+  "main": "server.js",
+  "scripts": {
+    "dev": "nodemon server.js",
+    "start": "node server.js",
+    "setup:db": "node scripts/setup-database.js",
+    "setup:mongodb": "node scripts/setup-mongodb.js",
+    "migrate:mongodb": "node scripts/migrate-to-mongodb.js"
+  },
+  "dependencies": {
+    "cloudinary": "^2.7.0",
+    "compression": "^1.7.4",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-rate-limit": "^7.1.5",
+    "fluent-ffmpeg": "^2.1.2",
+    "helmet": "^7.1.0",
+    "mongoose": "^8.16.1",
+    "multer": "^1.4.5-lts.1",
+    "openai": "^4.20.1",
+    "react-select": "^5.10.1",
+    "sqlite3": "^5.1.7",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "keywords": [
+    "api",
+    "video",
+    "search",
+    "semantic",
+    "mongodb"
+  ],
+  "author": "CodeGenius",
+  "license": "MIT"
+}
