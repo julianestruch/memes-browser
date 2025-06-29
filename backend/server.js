@@ -11,6 +11,9 @@ const { connectDB } = require('./config/mongodb');
 
 const app = express();
 
+// Configurar trust proxy para Render y otros servicios de hosting
+app.set('trust proxy', 1);
+
 // Conectar a MongoDB al iniciar el servidor
 connectDB()
   .then(() => {
