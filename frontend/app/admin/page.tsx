@@ -36,7 +36,7 @@ export default function AdminPanel() {
         adminApi.getPendingClips()
       ]);
       setStats(statsData);
-      setPendingClips(pendingData.clips);
+      setPendingClips(pendingData.clips as PendingClip[]);
     } catch (err) {
       setError('Error cargando datos del panel de administrador');
       console.error(err);
