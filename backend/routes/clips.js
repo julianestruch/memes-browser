@@ -80,13 +80,17 @@ router.post('/upload', upload.single('videoFile'), async (req, res) => {
     // Extraer audio y transcribir ANTES de eliminar el archivo local
     let transcription = '';
     try {
+      console.log('🎵 Iniciando extracción de audio...');
       const audioDir = path.join(__dirname, '../../uploads/audio');
       await fs.mkdir(audioDir, { recursive: true });
       const audioPath = await extractAudio(videoFile.path, audioDir);
+      console.log('🎤 Audio extraído, iniciando transcripción...');
       transcription = await transcribeAudio(audioPath);
+      console.log('✅ Transcripción completada:', transcription.substring(0, 100) + '...');
       await cleanupFile(audioPath);
     } catch (err) {
-      console.warn('⚠️ No se pudo transcribir el audio:', err.message);
+      console.error('❌ Error en transcripción:', err.message);
+      console.error('❌ Stack trace:', err.stack);
       transcription = '';
     }
 

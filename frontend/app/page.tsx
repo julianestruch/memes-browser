@@ -9,41 +9,44 @@ import { clipsApi, Clip } from '@/lib/api';
 
 export default function HomePage() {
   const [clips, setClips] = useState<Clip[]>([]);
-  const [filteredClips, setFilteredClips] = useState<Clip[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [searchResults, setSearchResults] = useState<Clip[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [searchLoading, setSearchLoading] = useState(false);
   const [selectedClip, setSelectedClip] = useState<Clip | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    loadClips();
+    loadRecentClips();
   }, []);
 
-  useEffect(() => {
-    if (searchTerm.trim() === '') {
-      setFilteredClips(clips);
-    } else {
-      const filtered = clips.filter(clip => 
-        clip.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        clip.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        clip.persons?.some(person => 
-          person.toLowerCase().includes(searchTerm.toLowerCase())
-        )
-      );
-      setFilteredClips(filtered);
-    }
-  }, [searchTerm, clips]);
-
-  const loadClips = async () => {
+  const loadRecentClips = async () => {
+    setLoading(true);
+    setError(null);
     try {
-      setLoading(true);
       const data = await clipsApi.getRecent(50);
       setClips(data.clips);
-      setFilteredClips(data.clips);
-    } catch (error) {
-      console.error('Error loading clips:', error);
+    } catch (err) {
+      setError('No se pudieron cargar los clips recientes');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSemanticSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!searchTerm.trim()) return;
+    setSearchLoading(true);
+    setError(null);
+    try {
+      const response = await clipsApi.semanticSearch(searchTerm.trim(), 50);
+      setSearchResults(response.results);
+    } catch (err: any) {
+      setError(err.message || 'Error en la búsqueda');
+      setSearchResults([]);
+    } finally {
+      setSearchLoading(false);
     }
   };
 
@@ -60,109 +63,112 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      
       <main className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-8">
-        {/* Buscador grande en móvil */}
-        <div className="max-w-2xl mx-auto mb-6 sm:mb-8">
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-6 h-6 sm:w-5 sm:h-5" />
-            <input
-              type="text"
-              placeholder="Busca por título, descripción o personas..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-14 pr-4 py-4 sm:py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-lg sm:text-base font-semibold shadow-sm"
-              style={{ boxShadow: '0 2px 8px 0 rgba(0,0,0,0.04)' }}
-            />
-          </div>
-        </div>
+        {/* Buscador semántico IA */}
+        <form onSubmit={handleSemanticSearch} className="mb-8 max-w-2xl mx-auto">
+          <label className="block text-lg font-medium text-gray-800 mb-2 text-left">Describí el meme</label>
+          <textarea
+            className="w-full p-4 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-primary-400 focus:border-primary-400 transition min-h-[80px] text-base bg-white"
+            placeholder={"Describe como si le estuvieras hablando a un amigo...\nej: 'el perrito que le inyectan wifi' o 'tipo en el micro mirando ventana'"}
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            disabled={searchLoading}
+          />
+          <button
+            type="submit"
+            className="btn-primary mt-4 px-8 py-2 text-lg"
+            disabled={searchLoading || !searchTerm.trim()}
+          >
+            {searchLoading ? 'Buscando...' : 'Buscar'}
+          </button>
+        </form>
 
-        {/* Título grande sobre el grid */}
-        <div className="text-center mb-4 sm:mb-8">
-          <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-1 sm:mb-4">Clips recientes</h1>
-          {!loading && (
-            <p className="text-base sm:text-lg text-gray-600">
-              {filteredClips.length === 0 
-                ? 'No se encontraron clips' 
-                : `${filteredClips.length} clip${filteredClips.length !== 1 ? 's' : ''} encontrado${filteredClips.length !== 1 ? 's' : ''}`
-              }
-            </p>
-          )}
-        </div>
-
-        {/* Loading State */}
-        {loading && (
-          <div className="flex justify-center items-center py-12">
-            <div className="text-center">
-              <Loader2 className="w-8 h-8 sm:w-12 sm:h-12 animate-spin text-primary-600 mx-auto mb-4" />
-              <p className="text-sm sm:text-base text-gray-600">Cargando clips...</p>
-            </div>
+        {/* Resultados de búsqueda semántica */}
+        {error && (
+          <div className="text-center py-12">
+            <p className="text-lg text-red-600">{error}</p>
           </div>
         )}
-
-        {/* Clips Grid */}
-        {!loading && filteredClips.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
-            {filteredClips.map((clip) => (
-              <div className="sm:p-0 p-1">
-                <ClipCard
-                  key={clip.id}
-                  clip={clip}
-                  onPlay={handlePlay}
-                  smallMobile
-                />
+        {searchResults && (
+          <>
+            <h2 className="text-xl font-semibold text-gray-900 mb-6 text-center">Resultados de la búsqueda</h2>
+            {searchResults.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
+                {searchResults.map((clip) => (
+                  <div className="sm:p-0 p-1">
+                    <ClipCard
+                      key={clip.id}
+                      clip={clip}
+                      onPlay={handlePlay}
+                      smallMobile
+                    />
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            ) : (
+              <div className="text-center py-12">
+                <h3 className="text-lg sm:text-xl font-medium text-gray-900 mb-2">
+                  No se encontraron resultados
+                </h3>
+                <p className="text-sm sm:text-base text-gray-600 mb-4">
+                  Intenta con otros términos de búsqueda
+                </p>
+                <button
+                  onClick={() => { setSearchTerm(''); setSearchResults(null); }}
+                  className="btn-primary text-sm sm:text-base"
+                >
+                  Limpiar búsqueda
+                </button>
+              </div>
+            )}
+          </>
         )}
 
-        {/* Empty State */}
-        {!loading && filteredClips.length === 0 && searchTerm && (
-          <div className="text-center py-12">
-            <Search className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg sm:text-xl font-medium text-gray-900 mb-2">
-              No se encontraron resultados
-            </h3>
-            <p className="text-sm sm:text-base text-gray-600 mb-4">
-              Intenta con otros términos de búsqueda
-            </p>
-            <button
-              onClick={() => setSearchTerm('')}
-              className="btn-primary text-sm sm:text-base"
-            >
-              Limpiar búsqueda
-            </button>
-          </div>
-        )}
-
-        {/* No Clips State */}
-        {!loading && clips.length === 0 && !searchTerm && (
-          <div className="text-center py-12">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Search className="w-8 h-8 sm:w-10 sm:h-10 text-gray-400" />
+        {/* Clips recientes solo si no hay búsqueda */}
+        {!searchResults && !searchLoading && !searchTerm && (
+          <>
+            <div className="text-center mb-4 sm:mb-8">
+              <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-1 sm:mb-4">Clips recientes</h1>
+              {!loading && (
+                <p className="text-base sm:text-lg text-gray-600">
+                  {clips.length === 0 
+                    ? 'No se encontraron clips' 
+                    : `${clips.length} clip${clips.length !== 1 ? 's' : ''} encontrado${clips.length !== 1 ? 's' : ''}`
+                  }
+                </p>
+              )}
             </div>
-            <h3 className="text-lg sm:text-xl font-medium text-gray-900 mb-2">
-              No hay clips disponibles
-            </h3>
-            <p className="text-sm sm:text-base text-gray-600 mb-4">
-              Sé el primero en subir un clip
-            </p>
-            <a
-              href="/upload"
-              className="btn-primary text-sm sm:text-base"
-            >
-              Subir primer clip
-            </a>
-          </div>
+            {loading ? (
+              <div className="flex justify-center items-center py-12">
+                <div className="text-center">
+                  <Loader2 className="w-8 h-8 sm:w-12 sm:h-12 animate-spin text-primary-600 mx-auto mb-4" />
+                  <p className="text-sm sm:text-base text-gray-600">Cargando clips...</p>
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
+                {clips.map((clip) => (
+                  <div className="sm:p-0 p-1">
+                    <ClipCard
+                      key={clip.id}
+                      clip={clip}
+                      onPlay={handlePlay}
+                      smallMobile
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
         )}
-      </main>
 
-      {/* Video Modal */}
-      <VideoModal
-        clip={selectedClip}
-        isOpen={showModal}
-        onClose={handleCloseModal}
-      />
+        {/* Video Modal */}
+        <VideoModal
+          clip={selectedClip}
+          isOpen={showModal}
+          onClose={handleCloseModal}
+        />
+      </main>
     </div>
   );
 } 
