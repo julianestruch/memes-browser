@@ -19,7 +19,9 @@ export default function UploadPage() {
   const [dragActive, setDragActive] = useState(false);
   const initialPersons = [
     'Azzaro', 'Duka', 'Porcel Jr', 'Sudaka', 'Gatos', 'La chabona', 'Coroniti', 'El bananero', 'Bananirou', 'Toscano', 'Cristina Kirchner', 'Milei', 'Downs',
-    'Mernuel', 'Moski', 'Bauletti', 'Davo', 'BenitoSDR'
+    'Mernuel', 'Moski', 'Bauletti', 'Davo', 'BenitoSDR',
+    // Personas sugeridas
+    'Maslaton', 'Marra', 'Olivia Rodrigo', 'Ana de armas', 'Coscu', 'El Momo', 'Sydney Sweeney', 'Bri Marcos', 'Fantino', 'Tronco', 'Beltran Briones', 'Dua Lipa', 'Messi'
   ];
   const [persons, setPersons] = useState<string[]>([]);
   const personOptions = initialPersons.map(p => ({ label: p, value: p }));
