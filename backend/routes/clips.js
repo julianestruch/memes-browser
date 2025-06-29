@@ -5,7 +5,6 @@ const fs = require('fs').promises;
 const { v4: uuidv4 } = require('uuid');
 const fetch = require('node-fetch');
 
-const { createClip, searchClipsByText, searchClipsByEmbedding, searchClipsByPerson, getAllClips, getClipById } = require('../config/database');
 const { transcribeAudio, generateEmbedding } = require('../services/openai');
 const { processVideo, isValidVideo, cleanupFile, extractAudio, uploadVideoToCloudinary } = require('../services/videoProcessor');
 const cloudinaryService = require('../services/cloudinary');
@@ -150,7 +149,8 @@ router.post('/upload', upload.single('videoFile'), async (req, res) => {
       height: videoInfo?.video?.height || null
     };
     
-    const result = await createClip(clipData);
+    const Clip = require('../models/Clip');
+    const result = await Clip.create(clipData);
     
     res.status(201).json({
       message: 'Clip subido exitosamente',
@@ -200,19 +200,19 @@ router.get('/search', async (req, res) => {
     if (embedding) {
       // Búsqueda por similitud de embedding
       console.log('🧠 Búsqueda por embedding...');
-      results = await searchClipsByEmbedding(embedding, limit);
+      results = await Clip.searchClipsByEmbedding(embedding, limit);
     }
 
     // Si no hay resultados por embedding, buscar por texto
     if (results.rowCount === 0) {
       console.log('📝 Búsqueda por texto...');
-      results = await searchClipsByText(q, limit);
+      results = await Clip.searchClipsByText(q, limit);
     }
 
     // Si aún no hay resultados, buscar por persona
     if (results.rowCount === 0) {
       console.log('👤 Búsqueda por persona...');
-      results = await searchClipsByPerson(q, limit);
+      results = await Clip.searchClipsByPerson(q, limit);
     }
 
     console.log(`✅ Búsqueda completada: ${results.rowCount} resultados`);
@@ -365,7 +365,8 @@ function cosineSimilarity(a, b) {
 router.get('/download/:id', async (req, res) => {
   const id = req.params.id;
   try {
-    const clip = await getClipById(id);
+    const Clip = require('../models/Clip');
+    const clip = await Clip.findById(id);
     if (!clip) {
       return res.status(404).json({ error: 'Clip no encontrado' });
     }

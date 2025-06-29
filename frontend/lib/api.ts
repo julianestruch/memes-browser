@@ -20,7 +20,7 @@ const api = axios.create({
 
 // Tipos de datos
 export interface Clip {
-  id: number;
+  id: number | string;
   title: string;
   description?: string;
   filePath: string;
@@ -28,6 +28,14 @@ export interface Clip {
   createdAt: string;
   similarity?: number;
   persons?: string[];
+  duration?: number;
+  width?: number;
+  height?: number;
+  // Campos de moderación
+  status?: 'pending' | 'approved' | 'rejected';
+  approved_at?: string;
+  approved_by?: string;
+  rejection_reason?: string;
 }
 
 export interface UploadResponse {
