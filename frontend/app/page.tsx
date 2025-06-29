@@ -40,7 +40,7 @@ export default function HomePage() {
     setSearchLoading(true);
     setError(null);
     try {
-      const response = await clipsApi.semanticSearch(searchTerm.trim(), 50);
+      const response = await clipsApi.semanticSearch(searchTerm.trim(), 1);
       setSearchResults(response.results);
     } catch (err: any) {
       setError(err.message || 'Error en la búsqueda');

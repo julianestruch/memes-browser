@@ -295,7 +295,7 @@ router.get('/recent', async (req, res) => {
  * Búsqueda semántica de clips usando IA (solo aprobados)
  */
 router.get('/semantic-search', async (req, res) => {
-  const { q, limit = 10 } = req.query;
+  const { q, limit = 1 } = req.query;
   try {
     if (!q || q.trim().length === 0) {
       return res.status(400).json({
@@ -303,6 +303,8 @@ router.get('/semantic-search', async (req, res) => {
         message: 'Por favor, proporciona un término de búsqueda'
       });
     }
+    
+    console.log(`🧠 Búsqueda semántica: "${q}"`);
     
     // Generar embedding de la consulta
     const queryEmbedding = await generateEmbedding(q.trim());
@@ -314,6 +316,8 @@ router.get('/semantic-search', async (req, res) => {
       embedding: { $exists: true, $ne: null } 
     });
     
+    console.log(`📊 Analizando ${clips.length} clips con embeddings...`);
+    
     // Calcular similitud coseno para cada clip
     const clipsWithSimilarity = clips.map(clip => {
       if (!clip.embedding || !Array.isArray(clip.embedding)) {
@@ -324,9 +328,9 @@ router.get('/semantic-search', async (req, res) => {
       return { clip, similarity };
     });
 
-    // Ordenar por similitud y devolver los mejores resultados
+    // Ordenar por similitud y devolver solo el mejor resultado
     const bestClips = clipsWithSimilarity
-      .filter(item => item.similarity > 0.1)
+      .filter(item => item.similarity > 0.3)
       .sort((a, b) => b.similarity - a.similarity)
       .slice(0, parseInt(limit))
       .map(item => ({
@@ -342,6 +346,11 @@ router.get('/semantic-search', async (req, res) => {
         height: item.clip.height,
         similarity: item.similarity
       }));
+    
+    console.log(`✅ Búsqueda completada: ${bestClips.length} resultado(s) encontrado(s)`);
+    if (bestClips.length > 0) {
+      console.log(`🎯 Mejor coincidencia: "${bestClips[0].title}" (similitud: ${bestClips[0].similarity.toFixed(3)})`);
+    }
     
     res.json({
       query: q,
