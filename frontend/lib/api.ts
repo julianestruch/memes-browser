@@ -152,6 +152,14 @@ export const adminApi = {
     });
     return response.data;
   },
+
+  /**
+   * Borra un clip permanentemente
+   */
+  deleteClip: async (clipId: string): Promise<{ message: string }> => {
+    const response = await api.delete(`/api/clips/admin/delete/${clipId}`);
+    return response.data;
+  },
 };
 
 /**

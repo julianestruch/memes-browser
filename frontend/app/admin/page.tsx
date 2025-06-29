@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { adminApi, Clip, getThumbnailUrl } from '@/lib/api';
-import { CheckCircle, XCircle, Clock, BarChart3, Users, Eye, AlertCircle } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, BarChart3, Users, Eye, AlertCircle, Trash2 } from 'lucide-react';
 
 interface AdminStats {
   pending: number;
@@ -23,6 +23,8 @@ export default function AdminPanel() {
   const [selectedClip, setSelectedClip] = useState<PendingClip | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
   const [showRejectModal, setShowRejectModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
 
   useEffect(() => {
     loadData();
@@ -87,10 +89,41 @@ export default function AdminPanel() {
     }
   };
 
+  const handleDelete = async (clip: PendingClip) => {
+    if (deletePassword !== 'admin123') {
+      setError('Contraseña incorrecta para borrar');
+      return;
+    }
+
+    try {
+      await adminApi.deleteClip(clip.id.toString());
+      setPendingClips(prev => prev.filter(c => c.id !== clip.id));
+      if (stats) {
+        setStats({
+          ...stats,
+          pending: stats.pending - 1,
+          total: stats.total - 1
+        });
+      }
+      setShowDeleteModal(false);
+      setDeletePassword('');
+      setSelectedClip(null);
+    } catch (err) {
+      setError('Error borrando el clip');
+      console.error(err);
+    }
+  };
+
   const openRejectModal = (clip: PendingClip) => {
     setSelectedClip(clip);
     setShowRejectModal(true);
     setRejectionReason('');
+  };
+
+  const openDeleteModal = (clip: PendingClip) => {
+    setSelectedClip(clip);
+    setShowDeleteModal(true);
+    setDeletePassword('');
   };
 
   const formatDate = (dateString: string) => {
@@ -255,6 +288,13 @@ export default function AdminPanel() {
                         <XCircle className="h-4 w-4 mr-1" />
                         Rechazar
                       </button>
+                      <button
+                        onClick={() => openDeleteModal(clip)}
+                        className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                      >
+                        <Trash2 className="h-4 w-4 mr-1" />
+                        Borrar
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -300,6 +340,52 @@ export default function AdminPanel() {
                   className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                 >
                   Rechazar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Borrado */}
+      {showDeleteModal && selectedClip && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="mt-3">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                Borrar Clip Permanentemente: {selectedClip.title}
+              </h3>
+              <div className="mb-4">
+                <p className="text-sm text-gray-600 mb-4">
+                  ⚠️ Esta acción es irreversible. El clip será eliminado permanentemente de la base de datos y de Cloudinary.
+                </p>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Contraseña de administrador:
+                </label>
+                <input
+                  type="password"
+                  value={deletePassword}
+                  onChange={(e) => setDeletePassword(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="admin123"
+                />
+              </div>
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={() => {
+                    setShowDeleteModal(false);
+                    setSelectedClip(null);
+                    setDeletePassword('');
+                  }}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={() => handleDelete(selectedClip)}
+                  className="px-4 py-2 text-sm font-medium text-white bg-gray-800 border border-transparent rounded-md hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                >
+                  Borrar Permanentemente
                 </button>
               </div>
             </div>

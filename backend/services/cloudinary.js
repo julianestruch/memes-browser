@@ -56,6 +56,19 @@ const uploadThumbnail = async (filePath, options = {}) => {
   }
 };
 
+// Función para eliminar archivo de Cloudinary
+const deleteFile = async (publicId, resourceType = 'video') => {
+  try {
+    const result = await cloudinary.uploader.destroy(publicId, {
+      resource_type: resourceType
+    });
+    return result;
+  } catch (error) {
+    console.error('Error eliminando archivo de Cloudinary:', error);
+    throw error;
+  }
+};
+
 // Función para obtener URL de video optimizada
 const getVideoUrl = (publicId, options = {}) => {
   const defaultOptions = {
@@ -90,6 +103,7 @@ const getThumbnailUrl = (publicId, options = {}) => {
 module.exports = {
   uploadVideo,
   uploadThumbnail,
+  deleteFile,
   getVideoUrl,
   getThumbnailUrl
 }; 

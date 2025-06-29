@@ -528,4 +528,70 @@ router.post('/admin/reject/:id', async (req, res) => {
   }
 });
 
+/**
+ * DELETE /api/admin/delete/:id
+ * Borra un clip permanentemente
+ */
+router.delete('/admin/delete/:id', async (req, res) => {
+  const id = req.params.id;
+  
+  try {
+    const Clip = require('../models/Clip');
+    
+    // Obtener clip antes de eliminarlo
+    const clip = await Clip.findById(id);
+    if (!clip) {
+      return res.status(404).json({ error: 'Clip no encontrado' });
+    }
+    
+    let cloudinaryError = null;
+    
+    // Eliminar de Cloudinary si existe public_id
+    if (clip.cloudinary_public_id) {
+      try {
+        // Eliminar video
+        await cloudinaryService.deleteFile(clip.cloudinary_public_id, 'video');
+        console.log('✅ Eliminado video de Cloudinary:', clip.cloudinary_public_id);
+      } catch (err) {
+        cloudinaryError = err.message;
+        console.warn('⚠️ No se pudo eliminar video de Cloudinary:', err.message);
+      }
+    }
+    
+    // Eliminar thumbnail de Cloudinary si la URL es de Cloudinary
+    const extractCloudinaryPublicId = (url) => {
+      if (!url || !url.includes('cloudinary.com')) return null;
+      const matches = url.match(/\/upload\/v\d+\/(.+)\.[a-zA-Z0-9]+$/);
+      return matches ? matches[1] : null;
+    };
+    
+    const thumbCloudinaryId = extractCloudinaryPublicId(clip.thumbnail_path);
+    if (thumbCloudinaryId) {
+      try {
+        await cloudinaryService.deleteFile(thumbCloudinaryId, 'image');
+        console.log('✅ Eliminado thumbnail de Cloudinary:', thumbCloudinaryId);
+      } catch (err) {
+        cloudinaryError = (cloudinaryError ? cloudinaryError + ' | ' : '') + err.message;
+        console.warn('⚠️ No se pudo eliminar thumbnail de Cloudinary:', err.message);
+      }
+    }
+    
+    // Eliminar archivos locales (por compatibilidad)
+    const videoPath = path.join(__dirname, '../../uploads/videos', path.basename(clip.file_path));
+    const thumbPath = path.join(__dirname, '../../uploads/thumbnails', path.basename(clip.thumbnail_path));
+    try { await fs.unlink(videoPath); } catch {}
+    try { await fs.unlink(thumbPath); } catch {}
+    
+    // Eliminar de MongoDB
+    await Clip.findByIdAndDelete(id);
+    
+    res.json({ 
+      message: 'Clip borrado permanentemente', 
+      cloudinary: cloudinaryError ? `Error: ${cloudinaryError}` : 'ok' 
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Error al borrar el clip', message: err.message });
+  }
+});
+
 module.exports = router;
